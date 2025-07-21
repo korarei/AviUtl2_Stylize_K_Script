@@ -1,0 +1,453 @@
+@Saturate
+--infomation:Saturate${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--track0:R Gain,0,1000,100,0.01
+--track1:G Gain,0,1000,100,0.01
+--track2:B Gain,0,1000,100,0.01
+--track3:A Gain,0,1000,100,0.01
+--select@_1:Color Space=1,Linear=0,sRGB=1
+--track@_2:Mix,0,100,100,0.01
+--[[pixelshader@saturate:
+${SHADER_UTILS}
+${SHADER_SATURATE}
+]]
+
+local r_gain = obj.track0 * 0.01
+local g_gain = obj.track1 * 0.01
+local b_gain = obj.track2 * 0.01
+local a_gain = obj.track3 * 0.01
+local color_space = _1 _1 = nil
+local mix = _2 * 0.01 _2 = nil
+
+
+obj.pixelshader("saturate", "object", "object", {
+    r_gain, g_gain, b_gain, a_gain,
+    color_space,
+    mix
+})
+
+
+@Threshold
+--infomation:Threshold${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--track0:Threshold,0,255,128
+--select@_1:Channel=1,Luminance (BT.601)=0,Luminance (BT.709)=1,Luminance (BT.2020)=2,Value=3,Saturation=4,Hue=5,Alpha=6
+--check0:Invert,0
+--color@_2:Light Color,0xffffff
+--color@_3:Dark Color,0x000000
+--select@_4:Color Space=1,Linear=0,sRGB=1
+--track1:Mix,0,100,100,0.01
+--[[pixelshader@thresholding:
+${SHADER_UTILS}
+${SHADER_THRESHOLD}
+]]
+
+local threshold = obj.track0 / 255.0
+local channel = _1 _1 = nil
+local inv = obj.check0
+local light_col = _2 _2 = nil
+local dark_col = _3 _3 = nil
+local color_space = _4 _4 = nil
+local mix = obj.track1 * 0.01
+
+
+obj.pixelshader("thresholding", "object", "object", {
+    threshold,
+    channel,
+    inv and 1.0 or 0.0,
+    light_col,
+    dark_col,
+    color_space,
+    mix
+})
+
+
+@Threshold(RGBA)
+--infomation:Threshold(RGBA)${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--track0:R Threshold,0,255,128
+--track1:G Threshold,0,255,128
+--track2:B Threshold,0,255,128
+--track3:A Threshold,0,255,128
+--check@_1:Invert R,0
+--check@_2:Invert G,0
+--check@_3:Invert B,0
+--check@_4:Invert A,0
+--check0:Disable A Threshold,0
+--select@_5:Color Space=1,Linear=0,sRGB=1
+--track@_6:Mix,0,100,100,0.01
+--[[pixelshader@thresholding_rgba:
+${SHADER_UTILS}
+${SHADER_THRESHOLD_RGBA}
+]]
+
+local r_threshold = obj.track0 / 255.0
+local g_threshold = obj.track1 / 255.0
+local b_threshold = obj.track2 / 255.0
+local a_threshold = obj.track3 / 255.0
+local inv_r = _1 _1 = nil
+local inv_g = _2 _2 = nil
+local inv_b = _3 _3 = nil
+local inv_a = _4 _4 = nil
+local disable_a = obj.check0
+local color_space = _5 _5 = nil
+local mix = _6 * 0.01 _6 = nil
+
+
+obj.pixelshader("thresholding_rgba", "object", "object", {
+    r_threshold, g_threshold, b_threshold, a_threshold,
+    inv_r, inv_g, inv_b, inv_a,
+    disable_a and 1.0 or 0.0,
+    color_space,
+    mix
+})
+
+
+@Posterize
+--infomation:Posterize${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--track0:Level,1,256,8,1
+--check@_1:Value Only,0
+--track@_2:Size,1,2000,1,1
+--check0:Multi Channel Mode,0
+--track1:R Level,1,256,8,1
+--track2:G Level,1,256,8,1
+--track3:B Level,1,256,8,1
+--select@_3:Color Space=1,Linear=0,sRGB=1
+--track@_4:Mix,0,100,100,0.01
+--[[pixelshader@posterize:
+${SHADER_UTILS}
+${SHADER_POSTERIZE}
+]]
+
+local level = math.floor(obj.track0)
+local use_value = _1 _1 = nil
+local size = math.floor(_2) _2 = nil
+local multi_channel_mode = obj.check0
+local r_level = obj.track1
+local g_level = obj.track2
+local b_level = obj.track3
+local color_space = _3 _3 = nil
+local mix = _4 * 0.01 _4 = nil
+
+obj.effect("モザイク", "サイズ", size)
+obj.pixelshader("posterize", "object", "object", {
+    multi_channel_mode and 1.0 or 0.0,
+    r_level, g_level, b_level,
+    level,
+    use_value,
+    color_space,
+    mix
+})
+
+
+@MotionTile
+--infomation:MotionTile${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--track0:X Center,-4000,4000,0,0.01
+--track1:Y Center,-4000,4000,0,0.01
+--track2:Output W,0,1000,100,0.01
+--track3:Output H,0,1000,100,0.01
+--track@_1:Tile W,0,1000,100,0.01
+--track@_2:Tile H,0,1000,100,0.01
+--check@_3:Mirror Horizontal Edge,0
+--check@_4:Mirror Vertical Edge,0
+--track@_5:Phase,-3600,3600,0,0.01
+--check0:Horizontal Shift,0
+--[[pixelshader@motion_tile:
+${SHADER_MOTION_TILE}
+]]
+
+obj.setanchor("track", 0, "line")
+
+local w, h = obj.getpixel()
+
+local cx = obj.track0 / w
+local cy = obj.track1 / h
+local out_w = obj.track2 * 0.01
+local out_h = obj.track3 * 0.01
+local tile_w = _1 * 0.01 _1 = nil
+local tile_h = _2 * 0.01 _2 = nil
+local mirror_h = _3 _3 = nil
+local mirror_v = _4 _4 = nil
+local phase = _5 / 360.0 _5 = nil
+local h_shift = obj.check0
+
+local geo = {}
+local max_res = 16384
+local out_res_w = math.min(math.floor(w * out_w), max_res)
+local out_res_h = math.min(math.floor(h * out_h), max_res)
+
+
+local function err_handler(e)
+    local hint = "Hint: Try increasing TemporaryImageCacheSize in system.conf."
+    debug_print(string.format("%s. %s", e, hint))
+    return
+end
+
+local function copy_geo(dst, src)
+    for k in ("ox, oy, oz, cx, cy, cz, rx, ry, rz, zoom, aspect, alpha"):gmatch("%a+") do
+        dst[k] = src[k]
+    end
+end
+
+
+if (out_res_w * out_res_h < 1) then
+    obj.effect("リサイズ", "拡大率", 0)
+    return
+end
+
+out_w = out_res_w / w
+out_h = out_res_h / h
+
+local ok, e = pcall(function()
+copy_geo(geo, obj)
+obj.setoption("drawtarget", "tempbuffer", out_res_w, out_res_h)
+
+obj.pixelshader("motion_tile", "tempbuffer", "object", {
+    w, h,
+    cx, cy,
+    out_w, out_h,
+    tile_w, tile_h,
+    mirror_h, mirror_v,
+    phase,
+    h_shift and 1.0 or 0.0
+})
+
+obj.load("tempbuffer")
+obj.clearbuffer("tempbuffer")
+copy_geo(obj, geo)
+end)
+if (not ok) then
+    err_handler(e)
+end
+
+
+@Tile
+--infomation:Tile${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--track0:X Count,1,100,3,1
+--track1:Y Count,1,100,3,1
+--track@_1:Z Count,1,100,1,1
+--track2:X Gap,0,1000,100,0.01
+--track3:Y Gap,0,1000,100,0.01
+--track@_2:Z Gap,0,1000,100,0.01
+--value@_3:Z Size,math.max(obj.getpixel())
+--check0:Use Group Pivot,1
+
+local use_group_pivot = obj.check0
+
+local count = {
+    x = math.floor(obj.track0) - 1,
+    y = math.floor(obj.track1) - 1,
+    z = math.floor(_1) - 1
+}
+_1 = nil
+
+local gap = {
+    x = obj.track2,
+    y = obj.track3,
+    z = _2
+}
+_2 = nil
+
+local w, h = obj.getpixel()
+local res = {
+    x = w,
+    y = h,
+    z = math.max(_3 or math.max(w, h), 0.0)
+}
+_3 = nil
+
+local half_res = {
+    x = res.x * 0.5,
+    y = res.y * 0.5
+}
+
+-- Arithmetic Progression
+-- Common Difference
+local d = {
+    x = res.x * gap.x * 0.01,
+    y = res.y * gap.y * 0.01,
+    z = res.z * gap.z * 0.01
+}
+
+-- First Term
+local a = {
+    x = -0.5 * d.x * count.x,
+    y = -0.5 * d.y * count.y,
+    z = -0.5 * d.z * count.z
+}
+
+
+obj.effect()
+if (use_group_pivot) then
+    local polys = {}
+    local idx = 1
+    for l = 0, count.z do
+        local z = a.z + d.z * l
+        for m = 0, count.x do
+            local x = a.x + d.x * m
+            local left = x - half_res.x
+            local right = x + half_res.x
+
+            for n = 0, count.y do
+                local y = a.y + d.y * n
+                local top = y - half_res.y
+                local bottom = y + half_res.y
+                polys[idx] = {
+                    left,  top,    z,
+                    right, top,    z,
+                    right, bottom, z,
+                    left,  bottom, z,
+                    0,     0,
+                    res.x, 0,
+                    res.x, res.y,
+                    0,     res.y
+                }
+
+                idx = idx + 1
+            end
+        end
+    end
+
+    obj.drawpoly(polys)
+else
+    for l = 0, count.z do
+        local z = a.z + d.z * l
+        for m = 0, count.x do
+            local x = a.x + d.x * m
+            for n = 0, count.y do
+                local y = a.y + d.y * n
+                obj.draw(x, y, z)
+            end
+        end
+    end
+end
+
+
+@GradientMap
+--infomation:GradientMap${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--file@_1:Map File
+--track0:Map Layer,0,256,0,1
+--check0:View Map,0
+--track@_2:Map Hue,-3600,3600,0,0.01
+--track1:Map Slice,0,100,50,0.01
+--track2:Map Scale,0,1000,100,0.01
+--track3:Map Shift,-500,500,0,0.01
+--select@_3:Map Edges,Clamp=0,Repeat=1,Mirror=2
+--check@_4:Invert Luma,0
+--select@_5:Luma Mode=1,BT.601=0,BT.709=1,BT.2020=2
+--select@_6:Color Space=1,Linear=0,sRGB=1
+--select@_7:Blend Mode,Normal=0,Add=1,Subtract=2,Multiply=3,Screen=4,Overlay=5,Lighten=6,Darken=7,Luminosity=8,Chroma=9,Linear Burn=10,Linear Light=11,Difference=12
+--track@_8:Mix,0,100,100,0.01
+--[[pixelshader@gradient_map:
+${SHADER_UTILS}
+${SHADER_MAP_UTILS}
+${SHADER_GRADIENT_MAP}
+]]
+--[[pixelshader@map_viewer:
+${SHADER_UTILS}
+${SHADER_MAP_UTILS}
+${SHADER_MAP_VIEWER}
+]]
+
+local map_path = _1 _1 = nil
+local map_layer = obj.track0
+local view_map = obj.check0
+local map_hue = _2 _2 = nil
+local map_slice = obj.track1 / 100.0
+local map_scale = obj.track2 / 100.0
+local map_shift = obj.track3 / 100.0
+local map_edges = _3 _3 = nil
+local inv_luma = _4 _4 = nil
+local luma_mode = _5 _5 = nil
+local color_space = _6 _6 = nil
+local blend_mode = _7 _7 = nil
+local mix = _8 / 100.0 _8= nil
+
+local geo = {}
+local map_w, map_h
+
+
+local function err_handler(e)
+    local hint = "Hint: Try increasing TemporaryImageCacheSize in system.conf."
+    debug_print(string.format("%s. %s", e, hint))
+    return
+end
+
+local function copy_geo(dst, src)
+    for k in ("ox, oy, oz, cx, cy, cz, rx, ry, rz, zoom, aspect, alpha"):gmatch("%a+") do
+        dst[k] = src[k]
+    end
+end
+
+local ok, e = pcall(function()
+if (map_path == "" and map_layer < 1) then
+    debug_print("The map not found.")
+    return
+end
+
+copy_geo(geo, obj)
+obj.copybuffer("tempbuffer", "object")
+obj.copybuffer("cache:img", "object")
+
+
+if (map_layer < 1) then
+    obj.load("image", map_path)
+elseif (map_layer ~= obj.layer) then
+    obj.load("layer", map_layer,true)
+else
+    debug_print("Self-referential mapping is not allowed.")
+    return
+end
+
+map_w, map_h = obj.getpixel()
+if (map_w * map_h < 1) then
+    debug_print("The map size is invalid.")
+    obj.load("tempbuffer")
+    copy_geo(obj, geo)
+    return
+end
+
+obj.effect("色調補正", "色相", map_hue)
+
+if (view_map) then
+    obj.pixelshader("map_viewer", "object", "object", {
+        map_w, map_h,
+        map_slice,
+        map_scale,
+        map_shift,
+        map_edges,
+    })
+    copy_geo(obj, geo)
+    return
+end
+
+obj.pixelshader("gradient_map", "cache:img", {"cache:img", "object"}, {
+    map_w, map_h,
+    map_slice,
+    map_scale,
+    map_shift,
+    map_edges,
+    inv_luma,
+    luma_mode,
+    color_space
+})
+
+obj.copybuffer("object", "cache:img")
+obj.clearbuffer("cache:img")
+
+obj.setoption("drawtarget", "tempbuffer")
+obj.setoption("blend", blend_mode)
+obj.draw(0, 0, 0, 1, mix)
+obj.setoption("blend", 0)
+
+obj.load("tempbuffer")
+obj.clearbuffer("tempbuffer")
+copy_geo(obj, geo)
+end)
+if (not ok) then
+    err_handler(e)
+end

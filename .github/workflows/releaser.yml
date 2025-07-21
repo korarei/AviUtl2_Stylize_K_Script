@@ -1,0 +1,48 @@
+name: releaser
+
+on:
+  push:
+    tags:
+      - '*'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  releaser:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Extract script name
+      run: |
+        REPO_BASE=$(basename "${{ github.repository }}")
+        MIDDLE_PART=$(echo "$REPO_BASE" | sed 's/AviUtl2_\(.*\)_Script/\1/')
+        echo "SCRIPT_NAME=$MIDDLE_PART" >> $GITHUB_ENV
+
+    - name: Setup python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Build script
+      run: |
+          python tools/build.py --tag ${{ github.ref_name }}
+
+    - name: Create release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: ${{ env.SCRIPT_NAME }}_${{ github.ref_name }}
+        files: 'build/*.zip'
+        body_path: build/release_note.txt
