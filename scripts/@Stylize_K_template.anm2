@@ -451,3 +451,13 @@ end)
 if (not ok) then
     err_handler(e)
 end
+
+
+@Unpremultiply
+--infomation:Unpremultiply${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--[[pixelshader@unpremult:
+${SHADER_UNPREMULT}
+]]
+
+obj.pixelshader("unpremult", "object", "object", {})
