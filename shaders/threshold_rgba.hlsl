@@ -1,5 +1,4 @@
 Texture2D texture0 : register(t0);
-SamplerState sampler0 : register(s0);
 cbuffer constant0 : register(b0) {
     float4 threshold;
     float4 inv;

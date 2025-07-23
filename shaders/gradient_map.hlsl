@@ -1,6 +1,6 @@
 Texture2D texture0 : register(t0);
 Texture2D map : register(t1);
-SamplerState sampler0 : register(s0);
+SamplerState map_smp : register(s1);
 cbuffer constant0 : register(b0) {
     float2 map_size;
     float map_slice;
@@ -27,6 +27,6 @@ float4 gradient_map(PS_INPUT input) : SV_Target {
     float2 map_uv = edit_map(luma, map_slice, map_scale, map_shift, map_edges);
 
     float2 e = 0.5 / map_size;
-    float4 out_col = map.Sample(sampler0, clamp(map_uv, e, 1.0 - e));
+    float4 out_col = map.Sample(map_smp, clamp(map_uv, e, 1.0 - e));
     return float4(out_col.rgb * tex.a, tex.a);
 }

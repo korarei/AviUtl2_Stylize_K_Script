@@ -23,7 +23,7 @@ def get_args():
 
 def load_config(config_path: Path):
     try:
-        with open(config_path, 'r', encoding='utf-8') as f:
+        with open(config_path, 'r', encoding="utf-8") as f:
             config = json.load(f)
         
         if "replacements_path" in config:
