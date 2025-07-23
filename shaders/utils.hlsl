@@ -77,7 +77,7 @@ float4 to_gamma(float4 col, int mode) {
             float3 t = step(col.rgb, 0.0031308);
             float3 low = 12.92 * col.rgb;
             float3 high = 1.055 * pow(abs(col.rgb), 1.0 / 2.4) - 0.055;
-            return float4(saturate(lerp(high, low, t)), col.a);
+            return saturate(float4(lerp(high, low, t), col.a));
         default:
             return saturate(col);
     }
