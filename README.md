@@ -379,6 +379,9 @@ AviUtl ExEdit2 beta3まででは発生しない現象である．今後のバー
 LICENSEファイルに記載．
 
 ## Change Log
+- **v1.1.0**
+  - リニア空間からsRGB空間に変換した際，Alphaを飽和していなかった問題を解決．
+  - Unpremultiplyスクリプトを追加．
 
 - **v1.0.0**
   - Release
