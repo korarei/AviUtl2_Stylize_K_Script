@@ -357,15 +357,15 @@ local map_path = _1 _1 = nil
 local map_layer = obj.track0
 local view_map = obj.check0
 local map_hue = _2 _2 = nil
-local map_slice = obj.track1 / 100.0
-local map_scale = obj.track2 / 100.0
-local map_shift = obj.track3 / 100.0
+local map_slice = obj.track1 * 0.01
+local map_scale = obj.track2 * 0.01
+local map_shift = obj.track3 * 0.01
 local map_edges = _3 _3 = nil
 local inv_luma = _4 _4 = nil
 local luma_mode = _5 _5 = nil
 local color_space = _6 _6 = nil
 local blend_mode = _7 _7 = nil
-local mix = _8 / 100.0 _8= nil
+local mix = _8 * 0.01 _8= nil
 
 local geo = {}
 local map_w, map_h
@@ -451,3 +451,19 @@ end)
 if (not ok) then
     err_handler(e)
 end
+
+
+@Unpremultiply
+--infomation:Unpremultiply${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--track0:Gain,0,1000,100,0.01
+--[[pixelshader@unpremult:
+${SHADER_UNPREMULT}
+]]
+
+local gain = obj.track0 * 0.01
+
+
+obj.pixelshader("unpremult", "object", "object", {
+    gain
+})
