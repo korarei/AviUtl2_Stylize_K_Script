@@ -23,6 +23,8 @@ AviUtl ExEdit2で画像の見た目を変えるスクリプト群．
 
 - GradientMap
 
+- Unpremultiply
+
 [ダウンロードはこちらから．](https://github.com/korarei/AviUtl2_Stylize_K_Script/releases)
 
 ## 動作確認
@@ -343,6 +345,16 @@ RGBAそれぞれに対して個別に2値化処理を行う．
 - Mix
 
   合成時の不透明度．
+
+### Unpremultiply
+
+![unpremult_sample](/assets/unpremult_sample.jpg)
+
+黒色背景を透過する．
+
+- Gain
+
+  調整用．0ですべて透明，100を超えると一部黒色を透過しない．
 
 ## 既知の問題
 
