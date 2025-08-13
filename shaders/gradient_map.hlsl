@@ -26,7 +26,7 @@ float4 gradient_map(PS_INPUT input) : SV_Target {
     luma = lerp(luma, 1.0 - luma, inv_luma);
     float2 map_uv = edit_map(luma, map_slice, map_scale, map_shift, map_edges);
 
-    float2 e = 0.5 / map_size;
+    float2 e = 0.5 * rcp(map_size);
     float4 out_col = map.Sample(map_smp, clamp(map_uv, e, 1.0 - e));
     return float4(out_col.rgb * tex.a, tex.a);
 }

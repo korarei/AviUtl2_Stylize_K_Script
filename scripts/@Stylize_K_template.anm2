@@ -244,15 +244,14 @@ local phase = _5 / 360.0 _5 = nil
 local h_shift = obj.check0
 
 local geo = {}
-local max_res = 16384
-local out_res_w = math.min(math.floor(w * out_w), max_res)
-local out_res_h = math.min(math.floor(h * out_h), max_res)
+local max_w, max_h = obj.getinfo("image_max")
+local out_res_w = math.min(math.floor(w * out_w), max_w)
+local out_res_h = math.min(math.floor(h * out_h), max_h)
 
 
 local function err_handler(e)
     local hint = "Hint: Try increasing TemporaryImageCacheSize in system.conf."
     debug_print(string.format("%s. %s", e, hint))
-    return
 end
 
 local function copy_geo(dst, src)
@@ -444,7 +443,6 @@ local map_w, map_h
 local function err_handler(e)
     local hint = "Hint: Try increasing TemporaryImageCacheSize in system.conf."
     debug_print(string.format("%s. %s", e, hint))
-    return
 end
 
 local function copy_geo(dst, src)
