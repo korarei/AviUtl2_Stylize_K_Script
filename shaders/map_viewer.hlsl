@@ -15,6 +15,6 @@ struct PS_INPUT {
 
 float4 map_viewer(PS_INPUT input) : SV_Target {
     float2 map_uv = edit_map(input.uv.x, map_slice, map_scale, map_shift, map_edges);
-    float2 e = 0.5 / map_size;
+    float2 e = 0.5 * rcp(map_size);
     return texture0.Sample(sampler0, clamp(map_uv, e, 1.0 - e));
 }

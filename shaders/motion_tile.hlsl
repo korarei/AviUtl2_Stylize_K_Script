@@ -15,17 +15,13 @@ struct PS_INPUT {
     float2 uv : TEXCOORD0;
 };
 
-inline float2 mod(float2 x, float y) {
-    return x - y * floor(x / y);
-}
-
 float4 tiler(float2 pos) {
-    float2 idx = floor(pos);
-    float2 parity = mod(idx, 2.0);
+    int2 idx = (int2)floor(pos);
+    float2 parity = float2(idx & 1);
     float2 uv = pos - idx;
     float2 coord = lerp(uv, 1.0 - uv, mirror * parity);
 
-    float2 e = 0.5 / tex_size;
+    float2 e = 0.5 * rcp(tex_size);
     return texture0.Sample(sampler0, clamp(coord, e, 1.0 - e));
 }
 
@@ -35,7 +31,7 @@ float4 motion_tile(PS_INPUT input) : SV_Target {
     pos /= max(tile_gain, 1.0e-6);
     pos += 0.5;
 
-    float2 parity = mod(floor(pos), 2.0);
+    float2 parity = float2((int2)floor(pos) & 1);
     float2 shift_dir = parity.yx * float2(h_shift, 1.0 - h_shift);
     pos -= shift_dir * phase;
 
