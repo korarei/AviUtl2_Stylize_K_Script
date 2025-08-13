@@ -29,8 +29,8 @@ obj.pixelshader("saturate", "object", "object", {
 @Mosaic
 --infomation:Mosaic${SCRIPT_NAME} ${VERSION}
 --label:${LABEL}
---track0:X Blocks,1,16384,10,1
---track1:Y Blocks,1,16384,10,1
+--track0:X Blocks,1,16384,32,1
+--track1:Y Blocks,1,16384,32,1
 --check0:Sharp Colors,0
 --value@_0:PI,{}
 --[[computeshader@mosaic_map:
@@ -54,10 +54,16 @@ elseif (type(_0.sharp_col) == "number") then
 end
 _0 = nil
 
+local function err_handler(e)
+    local hint = "Hint: Try increasing TemporaryImageCacheSize in system.conf."
+    debug_print(string.format("%s. %s", e, hint))
+end
+
 local function clamp(v, min, max)
     return math.max(math.min(v, max), min)
 end
 
+local ok, e = pcall(function()
 local w, h = obj.getpixel()
 bx = clamp(bx, 1, w)
 by = clamp(by, 1, h)
@@ -84,6 +90,10 @@ else
     })
 
     obj.clearbuffer("tempbuffer")
+end
+end)
+if (not ok) then
+    err_handler(e)
 end
 
 
