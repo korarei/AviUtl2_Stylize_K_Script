@@ -14,15 +14,16 @@ struct PS_INPUT {
 };
 
 float4 quantize_col(float4 col) {
+    const float adj = 255.0 * rcp(256.0);
     if (bool(multi_channel_mode)) {
-        return float4(floor(col.rgb * levels + 0.5) / levels, col.a);
+        return float4(floor(col.rgb * levels * adj) * rcp(levels - 1.0), col.a);
     } else if (bool(use_value)) {
         float3 rgb = saturate(col.rgb);
         float3 hsv = rgb2hsv(rgb);
-        hsv.z = saturate(floor(hsv.z * level + 0.5) / level);
+        hsv.z = saturate(floor(hsv.z * level * adj) * rcp(level - 1.0));
         return float4(hsv2rgb(hsv), col.a);
     } else {
-        return float4(floor(col.rgb * level + 0.5) / level, col.a);
+        return float4(floor(col.rgb * level * adj) * rcp(level - 1.0), col.a);
     }
 }
 
