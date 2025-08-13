@@ -409,7 +409,8 @@ end
 --infomation:GradientMap${SCRIPT_NAME} ${VERSION}
 --label:${LABEL}
 --file@_1:Map File
---track0:Map Layer,0,256,0,1
+--track0:Map Layer,-256,256,0,1
+--check@_9:Use Relative Layer,0
 --check0:View Map,0
 --track@_2:Map Hue,-3600,3600,0,0.01
 --track1:Map Slice,0,100,50,0.01
@@ -434,6 +435,7 @@ ${SHADER_MAP_VIEWER}
 
 local map_path = _1 _1 = nil
 local map_layer = obj.track0
+local use_rel_layer = _9 ~= 0 _9 = nil
 local view_map = obj.check0
 local map_hue = _2 _2 = nil
 local map_slice = obj.track1 * 0.01
@@ -462,7 +464,8 @@ local function copy_geo(dst, src)
 end
 
 local ok, e = pcall(function()
-if (map_path == "" and map_layer < 1) then
+local layer = use_rel_layer and math.max(obj.layer + map_layer, 1) or math.max(map_layer, 0)
+if (map_path == "" and (layer == 0 or layer == obj.layer)) then
     debug_print("The map not found.")
     return
 end
@@ -471,14 +474,10 @@ copy_geo(geo, obj)
 obj.copybuffer("tempbuffer", "object")
 obj.copybuffer("cache:img", "object")
 
-
-if (map_layer < 1) then
+if (layer == 0 or layer == obj.layer) then
     obj.load("image", map_path)
-elseif (map_layer ~= obj.layer) then
-    obj.load("layer", map_layer,true)
 else
-    debug_print("Self-referential mapping is not allowed.")
-    return
+    obj.load("layer", layer, true)
 end
 
 map_w, map_h = obj.getpixel()
