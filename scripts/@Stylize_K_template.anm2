@@ -19,12 +19,72 @@ local a_gain = obj.track3 * 0.01
 local color_space = _1 _1 = nil
 local mix = _2 * 0.01 _2 = nil
 
-
 obj.pixelshader("saturate", "object", "object", {
     r_gain, g_gain, b_gain, a_gain,
     color_space,
     mix
 })
+
+
+@Mosaic
+--infomation:Mosaic${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--track0:X Blocks,1,16384,10,1
+--track1:Y Blocks,1,16384,10,1
+--check0:Sharp Colors,0
+--value@_0:PI,{}
+--[[computeshader@mosaic_map:
+${SHADER_MOSAIC_AVE}
+]]
+--[[pixelshader@mosaic_draw:
+${SHADER_MOSAIC_DRAW}
+]]
+--[[pixelshader@mosaic_point:
+${SHADER_MOSAIC_POINT}
+]]
+
+_0 = _0 or {}
+local bx = math.floor(tonumber(_0.bx) or obj.track0)
+local by = math.floor(tonumber(_0.by) or obj.track1)
+local sharp_col = obj.check0
+if (type(_0.sharp_col) == "boolean") then
+    sharp_col = _0.sharp_col
+elseif (type(_0.sharp_col) == "number") then
+    sharp_col = _0.sharp_col ~= 0
+end
+_0 = nil
+
+local function clamp(v, min, max)
+    return math.max(math.min(v, max), min)
+end
+
+local w, h = obj.getpixel()
+bx = clamp(bx, 1, w)
+by = clamp(by, 1, h)
+
+if (sharp_col) then
+    obj.pixelshader("mosaic_point", "object", "object", {
+        bx, by,
+        w, h
+    })
+else
+    local n = 256
+    obj.setoption("drawtarget", "tempbuffer", bx, by)
+    obj.computeshader("mosaic_map", "tempbuffer", "object", {
+        bx, by,
+        w, h,
+        n,
+        bx * by
+    },
+    n, 1, 1)
+
+    obj.pixelshader("mosaic_draw", "object", "tempbuffer", {
+        bx, by,
+        w, h
+    })
+
+    obj.clearbuffer("tempbuffer")
+end
 
 
 @Threshold
