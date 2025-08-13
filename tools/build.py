@@ -18,6 +18,12 @@ def get_args():
         help = "Tag for the script version (default: v0.1.0-dev)"
     )
 
+    parser.add_argument(
+        "--download-assets",
+        action = "store_true",
+        help = "Download asset files"
+    )
+
     return parser.parse_args()
 
 
@@ -87,9 +93,10 @@ def main():
     build_lib.copy_docs(root_dir, publish_dir)
     build_lib.create_release_note(root_dir, build_dir)
 
-    map_dir = publish_dir / "map_data"
-    get_data("https://drive.usercontent.google.com/u/0/uc?id=1hk6XHRxzFkjobc1wOHtsPDyAwKjvkWHB&export=download", map_dir)
-    create_txt(map_dir, "credits.txt", "グラデーション画像提供者: ゼットデジタ 様")
+    if args.download_assets:
+        map_dir = publish_dir / "map_data"
+        get_data("https://drive.usercontent.google.com/u/0/uc?id=1hk6XHRxzFkjobc1wOHtsPDyAwKjvkWHB&export=download", map_dir)
+        create_txt(map_dir, "credits.txt", "グラデーション画像提供者: ゼットデジタ 様")
 
     build_lib.create_zip(publish_dir, build_dir, config["script_name"])
 
