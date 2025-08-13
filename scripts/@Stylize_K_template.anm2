@@ -104,7 +104,9 @@ end
 --select@_1:Channel=1,Luminance (BT.601)=0,Luminance (BT.709)=1,Luminance (BT.2020)=2,Value=3,Saturation=4,Hue=5,Alpha=6
 --check0:Invert,0
 --color@_2:Light Color,0xffffff
+--track2:Light Alpha,0,100,100,0.01
 --color@_3:Dark Color,0x000000
+--track3:Dark Alpha,0,100,100,0.01
 --select@_4:Color Space=1,Linear=0,sRGB=1
 --track1:Mix,0,100,100,0.01
 --[[pixelshader@thresholding:
@@ -116,7 +118,9 @@ local threshold = obj.track0 / 255.0
 local channel = _1 _1 = nil
 local inv = obj.check0
 local light_col = _2 _2 = nil
+local light_a = obj.track2 * 0.01
 local dark_col = _3 _3 = nil
+local dark_a = obj.track3 * 0.01
 local color_space = _4 _4 = nil
 local mix = obj.track1 * 0.01
 
@@ -126,7 +130,9 @@ obj.pixelshader("thresholding", "object", "object", {
     channel,
     inv and 1.0 or 0.0,
     light_col,
+    light_a,
     dark_col,
+    dark_a,
     color_space,
     mix
 })

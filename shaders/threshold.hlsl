@@ -4,7 +4,9 @@ cbuffer constant0 : register(b0) {
     float channel;
     float inv;
     float light_col;
+    float light_a;
     float dark_col;
+    float dark_a;
     float color_space;
     float mix;
 };
@@ -18,7 +20,9 @@ float4 luminance_thresholding(float4 col) {
     float val = calc_luma(col.rgb, channel);
     val = lerp(val, saturate(1.0 - val), inv);
     float mask = step(threshold, val);
-    return lerp(decode_col(dark_col, col.a), decode_col(light_col, col.a), mask);
+    float4 dark = decode_col(dark_col, dark_a * col.a);
+    float4 light = decode_col(light_col, light_a * col.a);
+    return lerp(dark, light, mask);
 }
 
 float4 hsv_thresholding(float4 col) {
@@ -39,7 +43,9 @@ float4 hsv_thresholding(float4 col) {
 
     val = lerp(val, saturate(1.0 - val), inv);
     float mask = step(threshold, val);
-    return lerp(decode_col(dark_col, col.a), decode_col(light_col, col.a), mask);
+    float4 dark = decode_col(dark_col, dark_a * col.a);
+    float4 light = decode_col(light_col, light_a * col.a);
+    return lerp(dark, light, mask);
 }
 
 float4 alpha_thresholding(float4 col) {
