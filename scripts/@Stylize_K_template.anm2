@@ -166,13 +166,14 @@ obj.pixelshader("thresholding_rgba", "object", "object", {
 @Posterize
 --infomation:Posterize${SCRIPT_NAME} ${VERSION}
 --label:${LABEL}
---track0:Level,1,256,8,1
+--track0:Level,2,256,8,1
 --check@_1:Value Only,0
 --track@_2:Size,1,2000,1,1
+--check@_5:Sharp Colors,0
 --check0:Multi Channel Mode,0
---track1:R Level,1,256,8,1
---track2:G Level,1,256,8,1
---track3:B Level,1,256,8,1
+--track1:R Level,2,256,8,1
+--track2:G Level,2,256,8,1
+--track3:B Level,2,256,8,1
 --select@_3:Color Space=1,Linear=0,sRGB=1
 --track@_4:Mix,0,100,100,0.01
 --[[pixelshader@posterize:
@@ -183,6 +184,7 @@ ${SHADER_POSTERIZE}
 local level = math.floor(obj.track0)
 local use_value = _1 _1 = nil
 local size = math.floor(_2) _2 = nil
+local sharp_color = _5 _5 = nil
 local multi_channel_mode = obj.check0
 local r_level = obj.track1
 local g_level = obj.track2
@@ -190,11 +192,19 @@ local b_level = obj.track3
 local color_space = _3 _3 = nil
 local mix = _4 * 0.01 _4 = nil
 
-obj.effect("モザイク", "サイズ", size)
+local function clamp(v, min, max)
+    return math.max(math.min(v, max), min)
+end
+
+if (size > 1) then
+    local w, h = obj.getpixel()
+    local mosaic_params = string.format("bx = %d, by = %d, sharp_col = %d", w / size, h / size, sharp_color)
+    obj.effect("Mosaic@Stylize_K", "PI", mosaic_params)
+end
 obj.pixelshader("posterize", "object", "object", {
     multi_channel_mode and 1.0 or 0.0,
-    r_level, g_level, b_level,
-    level,
+    clamp(r_level, 2, 256), clamp(g_level, 2, 256), clamp(b_level, 2, 256),
+    clamp(level, 2, 256),
     use_value,
     color_space,
     mix
