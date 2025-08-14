@@ -17,7 +17,7 @@ groupshared float4 col_buf[64];
 groupshared uint cnt_buf[64];
 
 [numthreads(8, 8, 1)]
-void mosaic_map(CS_INPUT input) {
+void mosaic_ave(CS_INPUT input) {
     for (uint i = input.gid.x; i < uint(total_blocks); i += uint(total_groups)) {
         uint map_w = uint(blocks.x);
         uint2 block_idx = uint2(i % map_w, i / map_w);
