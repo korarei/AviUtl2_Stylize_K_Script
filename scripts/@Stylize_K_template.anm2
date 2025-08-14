@@ -33,7 +33,7 @@ obj.pixelshader("saturate", "object", "object", {
 --track1:Y Blocks,1,16384,32,1
 --check0:Sharp Colors,0
 --value@_0:PI,{}
---[[computeshader@mosaic_map:
+--[[computeshader@mosaic_ave:
 ${SHADER_MOSAIC_AVE}
 ]]
 --[[pixelshader@mosaic_draw:
@@ -76,7 +76,7 @@ if (sharp_col) then
 else
     local n = 256
     obj.setoption("drawtarget", "tempbuffer", bx, by)
-    obj.computeshader("mosaic_map", "tempbuffer", "object", {
+    obj.computeshader("mosaic_ave", "tempbuffer", "object", {
         bx, by,
         w, h,
         n,
