@@ -411,6 +411,62 @@ else
 end
 
 
+@Repeat
+--infomation:Repeat${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--track0:Copies,1,1000,3,1
+--track@_7:Offset,-1000,1000,0,1
+--check0:Relative Position,0
+--track1:X,-100000,100000,100,0.01
+--track2:Y,-100000,100000,0,0.01
+--track3:Z,-100000,100000,0,0.01
+--track@_1:X Rotation,-3600,3600,0,0.01
+--track@_2:Y Rotation,-3600,3600,0,0.01
+--track@_3:Z Rotation,-3600,3600,0,0.01
+--track@_4:Zoom,0,10000,100,0.001
+--track@_5:Start Alpha,0,100,100,0.01
+--track@_6:End Alpha,0,100,100,0.01
+--value@_8:Z Size,math.max(obj.getpixel())
+--value@_0:PI,{}
+
+_0 = _0 or {}
+local copies = math.max(math.floor(tonumber(_0.copies) or obj.track0), 1)
+local offset = math.floor(tonumber(_0.offset) or _7) _7 = nil
+local rel_pos = obj.check0
+if (type(_0.rel_pos) == "boolean") then
+    rel_pos = _0.rel_pos
+elseif (type(_0.rel_pos) == "number") then
+    rel_pos = _0.rel_pos ~= 0
+end
+local x = tonumber(_0.x) or obj.track1
+local y = tonumber(_0.y) or obj.track2
+local z = tonumber(_0.z) or obj.track3
+local rx = tonumber(_0.rx) or _1 _1 = nil
+local ry = tonumber(_0.ry) or _2 _2 = nil
+local rz = tonumber(_0.rz) or _3 _3 = nil
+local scale = math.max(tonumber(_0.zoom) or _4, 0.0) * 0.01 _4 = nil
+local a_st = math.max(tonumber(_0.st_alpha) or _5, 0.0) * 0.01 _5 = nil
+local a_ed = math.max(tonumber(_0.ed_alpha) or _6, 0.0) * 0.01 _6 = nil
+local z_size = tonumber(_8) _8 = nil
+_0 = nil
+
+local a_grad = a_ed - a_st
+if (rel_pos) then
+    local w, h = obj.getpixel()
+    x = w * x * 0.01
+    y = h * y * 0.01
+    z = (z_size or math.max(w ,h)) * z * 0.01
+end
+
+obj.effect()
+for i = 0, copies - 1 do
+    local t = i / (copies - 1)
+    local alpha = a_st + a_grad * t
+    i = i + offset
+    obj.draw(x * i, y * i, z * i, math.pow(scale, i), alpha, rx * i, ry * i, rz * i)
+end
+
+
 @GradientMap
 --infomation:GradientMap${SCRIPT_NAME} ${VERSION}
 --label:${LABEL}
