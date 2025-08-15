@@ -314,8 +314,9 @@ obj.pixelshader("posterize", "object", "object", {
 --select@_13:Blend Mode,Normal=0,Add=1,Subtract=2,Multiply=3,Screen=4,Overlay=5,Lighten=6,Darken=7,Luminosity=8,Chroma=9,Linear Burn=10,Linear Light=11,Difference=12
 --track@_14:Mix,0,100,100,0.01
 --check@_15:Shuffle Glyphs,0
---track@_16:Interval,0,100,0,1
---track@_17:Seed,-1000,1000,-1,1
+--value@_16:Exclude Glyphs,""
+--track@_17:Interval,0,100,0,1
+--track@_18:Seed,-1000,1000,-1,1
 --value@_0:PI,{}
 --[[pixelshader@ascii:
 ${SHADER_UTILS}
@@ -362,8 +363,9 @@ if (type(_0.shuf_glyphs) == "boolean") then
 elseif (type(_0.shuf_glyphs) == "number") then
     shuf_glyphs = _0.inv_luma ~= 0
 end
-local interval = math.max(tonumber(_0.interval) or _16, 0) _16 = nil
-local seed = tonumber(_0.seed) or _17 _17 = nil
+local exclude_str = _0.exclude and tonumber(_0.exclude) or _16 _16 = nil
+local interval = math.max(tonumber(_0.interval) or _17, 0) _17 = nil
+local seed = tonumber(_0.seed) or _18 _18 = nil
 _0 = nil
 
 if (glyphs_str == "") then
@@ -405,11 +407,26 @@ local function split_utf8(str)
     return t
 end
 
-local function shuffle(t)
+local function shuffle(t, exclude)
+    local set = {}
+    for _, v in ipairs(exclude or {}) do
+        set[v] = true
+    end
+
+    local indices = {}
+    local len = 0
+    for i = 1, #t do
+        if not set[t[i]] then
+            len = len + 1
+            indices[len] = i
+        end
+    end
+
     local f = interval > 0 and math.floor(obj.frame / interval) or 0
-    for i = #t, 2, -1 do
+    for i = len, 2, -1 do
         local j = obj.rand(1, i, seed, f)
-        t[i], t[j] = t[j], t[i]
+        local m, n = indices[i], indices[j]
+        t[m], t[n] = t[n], t[m]
     end
 end
 
@@ -423,6 +440,7 @@ local ok, e = pcall(function()
     local mosaic_params = string.format("bx = %d, by = %d, sharp_col = %d", bx, by, sharp_col)
     local size = math.max(math.min(bw, bh) - padding * 2, 0)
     local glyphs = split_utf8(glyphs_str)
+    local exclude = split_utf8(exclude_str)
     local len = #glyphs
     local map_w, map_h = bw * math.ceil(len / 3.0), bh
     if (map_w > max_w or map_h > max_h) then
@@ -438,7 +456,7 @@ local ok, e = pcall(function()
     obj.setoption("drawtarget", "tempbuffer", map_w, map_h)
     obj.setoption("blend", 1)
     if (shuf_glyphs) then
-        shuffle(glyphs)
+        shuffle(glyphs, exclude)
     end
 
     local a = -0.5 * (map_w - bw)
