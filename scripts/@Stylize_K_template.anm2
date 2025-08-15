@@ -251,32 +251,55 @@ obj.pixelshader("posterize", "object", "object", {
 --check@_14:Shuffle Glyphs,0
 --track@_15:Interval,0,100,0,1
 --track@_16:Seed,-1000,1000,-1,1
+--value@_0:PI,{}
 --[[pixelshader@ascii:
 ${SHADER_UTILS}
 ${SHADER_ASCII}
 ]]
 
-local glyphs_str = _1 _1 = nil
-local font = _2 _2 = nil
-local padding = math.floor(_3) _3 = nil
-local bx = obj.track0
-local by = obj.track1
+local function clamp(v, min, max)
+    return math.max(math.min(v, max), min)
+end
+
+_0 = _0 or {}
+local glyphs_str = _0.glyphs and tostring(_0.glyphs) or _1 _1 = nil
+local font = _0.font and tostring(_0.font) or _2 _2 = nil
+local padding = math.floor(tonumber(_0.padding) or _3) _3 = nil
+local bx = clamp(math.floor(tonumber(_0.bx) or obj.track0), 1, 16384)
+local by = clamp(math.floor(tonumber(_0.by) or obj.track1), 1, 16384)
 local sharp_col = obj.check0 and 1 or 0
-local luma_gain = _4 * 0.01 _4 = nil
-local min_luma = obj.track2 * 0.01
-local max_luma = obj.track3 * 0.01
-local luma_mode = _5 _5 = nil
+if (type(_0.sharp_col) == "boolean") then
+    sharp_col = _0.sharp_col and 1 or 0
+elseif (type(_0.sharp_col) == "number") then
+    sharp_col = _0.sharp_col ~= 0 and 1 or 0
+end
+local luma_gain = math.max(tonumber(_0.luma_gain) or _4, 0.0) * 0.01 _4 = nil
+local min_luma = clamp(tonumber(_0.min_luma) or obj.track2, 0.0, 100.0) * 0.01
+local max_luma = clamp(tonumber(_0.max_luma) or obj.track3, 0.0, 100.0) * 0.01
+local luma_mode = tonumber(_0.luma_mode) or _5 _5 = nil
 local inv_luma = _6 _6 = nil
-local glyph_type = _7 _7 = nil
-local glyph_col = _8 _8 = nil
-local canvas_type = _9 _9 = nil
-local canvas_col = _10 _10 = nil
-local col_space = _11 _11 = nil
-local blend_mode = _12 _12= nil
-local mix = _13 * 0.01 _13 = nil
+if (type(_0.inv_luma) == "boolean") then
+    inv_luma = _0.inv_luma and 1 or 0
+elseif (type(_0.inv_luma) == "number") then
+    inv_luma = _0.inv_luma ~= 0 and 1 or 0
+end
+local glyph_type = tonumber(_0.glyph_type) or _7 _7 = nil
+local glyph_col = clamp(tonumber(_0.glyph_col) or _8, 0x000000, 0xffffff) _8 = nil
+local canvas_type = tonumber(_0.canvas_type) or _9 _9 = nil
+local canvas_col = clamp(tonumber(_0.canvas_col) or _10, 0x000000, 0xffffff) _10 = nil
+local col_space = tonumber(_0.col_space) or _11 _11 = nil
+local blend_mode = tonumber(_0.blend_mode) or _12 _12= nil
+local mix = clamp(tonumber(_0.mix) or _13, 0.0, 100.0) * 0.01 _13 = nil
 local shuf_glyphs = _14 ~= 0 _14 = nil
-local interval = _15 _15 = nil
-local seed = _16 _16 = nil
+if (type(_0.shuf_glyphs) == "boolean") then
+    shuf_glyphs = _0.shuf_glyphs
+elseif (type(_0.shuf_glyphs) == "number") then
+    shuf_glyphs = _0.inv_luma ~= 0
+end
+local interval = math.max(tonumber(_0.interval) or _15, 0) _15 = nil
+local seed = tonumber(_0.seed) or _16 _16 = nil
+_0 = nil
+
 if (glyphs_str == "") then
     debug_print("The text cannot be empty.")
     return

@@ -40,7 +40,8 @@ float4 ascii(PS_INPUT input) : SV_Target {
     uint2 block_idx = uint2(input.pos.xy * rcp(block_size));
     uint2 pos = input.pos.xy - uint2(block_idx * block_size);
     uint glyph_idx = uint(luma * glyph_len * adj);
-    float shape = get_glyph_shape(pos, glyph_idx, block_size.x);
+    float alpha = floor(col.a * (glyph_len + 1.0) * adj) * rcp(glyph_len);
+    float shape = get_glyph_shape(pos, glyph_idx, block_size.x) * alpha;
 
     float flag = step(2.0, glyph_type);
     float4 glyph = lerp(decode_col(glyph_col, shape), float4(col.rgb, shape), flag);
