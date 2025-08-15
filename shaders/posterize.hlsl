@@ -3,7 +3,7 @@ cbuffer params : register(b0) {
     float multi_channel_mode;
     float3 levels;
     float level;
-    float use_value;
+    float use_v;
     float col_space;
     float mix;
 };
@@ -16,14 +16,14 @@ struct PS_INPUT {
 float4 quantize_col(float4 col) {
     const float adj = 255.0 * rcp(256.0);
     if (bool(multi_channel_mode)) {
-        return float4(floor(col.rgb * levels * adj) * rcp(levels - 1.0), col.a);
-    } else if (bool(use_value)) {
+        return float4(floor(col.rgb * levels * adj) * rcp(max(levels - 1.0, 1.0)), col.a);
+    } else if (bool(use_v)) {
         float3 rgb = saturate(col.rgb);
         float3 hsv = rgb2hsv(rgb);
-        hsv.z = saturate(floor(hsv.z * level * adj) * rcp(level - 1.0));
+        hsv.z = saturate(floor(hsv.z * level * adj) * rcp(max(level - 1.0, 1.0)));
         return float4(hsv2rgb(hsv), col.a);
     } else {
-        return float4(floor(col.rgb * level * adj) * rcp(level - 1.0), col.a);
+        return float4(floor(col.rgb * level * adj) * rcp(max(level - 1.0, 1.0)), col.a);
     }
 }
 
