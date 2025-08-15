@@ -7,17 +7,20 @@
 --track3:A Gain,0,1000,100,0.01
 --select@_1:Color Space=1,Linear=0,sRGB=1
 --track@_2:Mix,0,100,100,0.01
+--value@_0:PI,{}
 --[[pixelshader@saturate:
 ${SHADER_UTILS}
 ${SHADER_SATURATE}
 ]]
 
-local r_gain = obj.track0 * 0.01
-local g_gain = obj.track1 * 0.01
-local b_gain = obj.track2 * 0.01
-local a_gain = obj.track3 * 0.01
-local col_space = _1 _1 = nil
-local mix = _2 * 0.01 _2 = nil
+_0 = _0 or {}
+local r_gain = math.max(tonumber(_0.r_gain) or obj.track0, 0.0) * 0.01
+local g_gain = math.max(tonumber(_0.g_gain) or obj.track1, 0.0) * 0.01
+local b_gain = math.max(tonumber(_0.b_gain) or obj.track2, 0.0) * 0.01
+local a_gain = math.max(tonumber(_0.a_gain) or obj.track3, 0.0) * 0.01
+local col_space = tonumber(_0.col_space) or _1 _1 = nil
+local mix = math.max(math.min(tonumber(_0.mix) or _2, 100.0), 0.0) * 0.01 _2 = nil
+_0 = nil
 
 obj.pixelshader("saturate", "object", "object", {
     r_gain, g_gain, b_gain, a_gain,
@@ -109,26 +112,37 @@ end
 --track3:Dark Alpha,0,100,100,0.01
 --select@_4:Color Space=1,Linear=0,sRGB=1
 --track1:Mix,0,100,100,0.01
+--value@_0:PI,{}
 --[[pixelshader@thresholding:
 ${SHADER_UTILS}
 ${SHADER_THRESHOLD}
 ]]
 
-local threshold = obj.track0 / 255.0
-local channel = _1 _1 = nil
-local inv = obj.check0
-local light_col = _2 _2 = nil
-local light_a = obj.track2 * 0.01
-local dark_col = _3 _3 = nil
-local dark_a = obj.track3 * 0.01
-local col_space = _4 _4 = nil
-local mix = obj.track1 * 0.01
+local function clamp(v, min, max)
+    return math.max(math.min(v, max), min)
+end
 
+_0 = _0 or {}
+local threshold = clamp(tonumber(_0.threshold) or obj.track0, 0.0, 255.0) / 255.0
+local channel = tonumber(_0.channel) or _1 _1 = nil
+local inv = obj.check0 and 1 or 0
+if (type(_0.inv) == "boolean") then
+    inv = _0.inv and 1 or 0
+elseif (type(_0.inv) == "boolean") then
+    inv = _0.inv ~= 0 and 1 or 0
+end
+local light_col = clamp(tonumber(_0.light_col) or _2, 0x000000, 0xffffff) _2 = nil
+local light_a = clamp(tonumber(_0.light_a) or obj.track2, 0.0, 100.0) * 0.01
+local dark_col = clamp(tonumber(_0.dark_col) or _3, 0x000000, 0xffffff) _3 = nil
+local dark_a = clamp(tonumber(_0.dark_a) or obj.track3, 0.0, 100.0) * 0.01
+local col_space = tonumber(_0.col_space) or _4 _4 = nil
+local mix = clamp(tonumber(_0.mix) or obj.track1, 0.0, 100.0) * 0.01
+_0 = nil
 
 obj.pixelshader("thresholding", "object", "object", {
     threshold,
     channel,
-    inv and 1.0 or 0.0,
+    inv,
     light_col,
     light_a,
     dark_col,
@@ -152,28 +166,59 @@ obj.pixelshader("thresholding", "object", "object", {
 --check0:Disable A Threshold,0
 --select@_5:Color Space=1,Linear=0,sRGB=1
 --track@_6:Mix,0,100,100,0.01
+--value@_0:PI,{}
 --[[pixelshader@thresholding_rgba:
 ${SHADER_UTILS}
 ${SHADER_THRESHOLD_RGBA}
 ]]
 
-local r_threshold = obj.track0 / 255.0
-local g_threshold = obj.track1 / 255.0
-local b_threshold = obj.track2 / 255.0
-local a_threshold = obj.track3 / 255.0
-local inv_r = _1 _1 = nil
-local inv_g = _2 _2 = nil
-local inv_b = _3 _3 = nil
-local inv_a = _4 _4 = nil
-local disable_a = obj.check0
-local col_space = _5 _5 = nil
-local mix = _6 * 0.01 _6 = nil
+local function clamp(v, min, max)
+    return math.max(math.min(v, max), min)
+end
 
+_0 = _0 or {}
+local r_threshold = clamp(tonumber(_0.r_threshold) or obj.track0, 0.0, 255.0) / 255.0
+local g_threshold = clamp(tonumber(_0.g_threshold) or obj.track1, 0.0, 255.0) / 255.0
+local b_threshold = clamp(tonumber(_0.b_threshold) or obj.track2, 0.0, 255.0) / 255.0
+local a_threshold = clamp(tonumber(_0.a_threshold) or obj.track3, 0.0, 255.0) / 255.0
+local inv_r = _1 _1 = nil
+if (type(_0.inv_r) == "boolean") then
+    inv_r = _0.inv_r and 1 or 0
+elseif (type(_0.inv_r) == "number") then
+    inv_r = _0.inv_r ~= 0 and 1 or 0
+end
+local inv_g = _2 _2 = nil
+if (type(_0.inv_g) == "boolean") then
+    inv_g = _0.inv_g and 1 or 0
+elseif (type(_0.inv_g) == "number") then
+    inv_g = _0.inv_g ~= 0 and 1 or 0
+end
+local inv_b = _3 _3 = nil
+if (type(_0.inv_b) == "boolean") then
+    inv_b = _0.inv_b and 1 or 0
+elseif (type(_0.inv_b) == "number") then
+    inv_b = _0.inv_b ~= 0 and 1 or 0
+end
+local inv_a = _4 _4 = nil
+if (type(_0.inv_a) == "boolean") then
+    inv_a = _0.inv_a and 1 or 0
+elseif (type(_0.inv_a) == "number") then
+    inv_a = _0.inv_a ~= 0 and 1 or 0
+end
+local disable_a = obj.check0 and 1 or 0
+if (type(_0.disable_a) == "boolean") then
+    disable_a = _0.disable_a and 1 or 0
+elseif (type(_0.disable_a) == "number") then
+    disable_a = disable_a ~= 0 and 1 or 0
+end
+local col_space = tonumber(_0.col_space) or _5 _5 = nil
+local mix = clamp(tonumber(_0.mix) or _6, 0.0, 100.0) * 0.01 _6 = nil
+_0 = nil
 
 obj.pixelshader("thresholding_rgba", "object", "object", {
     r_threshold, g_threshold, b_threshold, a_threshold,
     inv_r, inv_g, inv_b, inv_a,
-    disable_a and 1.0 or 0.0,
+    disable_a,
     col_space,
     mix
 })
@@ -182,46 +227,65 @@ obj.pixelshader("thresholding_rgba", "object", "object", {
 @Posterize
 --infomation:Posterize${SCRIPT_NAME} ${VERSION}
 --label:${LABEL}
---track0:Level,2,256,8,1
+--track0:Level,1,256,8,1
 --check@_1:Value Only,0
 --track@_2:Size,1,2000,1,1
 --check@_5:Sharp Colors,0
 --check0:Multi Channel Mode,0
---track1:R Level,2,256,8,1
---track2:G Level,2,256,8,1
---track3:B Level,2,256,8,1
+--track1:R Level,1,256,8,1
+--track2:G Level,1,256,8,1
+--track3:B Level,1,256,8,1
 --select@_3:Color Space=1,Linear=0,sRGB=1
 --track@_4:Mix,0,100,100,0.01
+--value@_0:PI,{}
 --[[pixelshader@posterize:
 ${SHADER_UTILS}
 ${SHADER_POSTERIZE}
 ]]
 
-local level = math.floor(obj.track0)
-local use_value = _1 _1 = nil
-local size = math.floor(_2) _2 = nil
-local sharp_col = _5 _5 = nil
-local multi_channel_mode = obj.check0
-local r_level = obj.track1
-local g_level = obj.track2
-local b_level = obj.track3
-local col_space = _3 _3 = nil
-local mix = _4 * 0.01 _4 = nil
-
 local function clamp(v, min, max)
     return math.max(math.min(v, max), min)
 end
+
+_0 = _0 or {}
+local level = clamp(math.floor(tonumber(_0.level) or obj.track0), 1, 256)
+local use_v = _1 _1 = nil
+if (type(_0.use_v) == "boolean") then
+    use_v = _0.use_v and 1 or 0
+elseif (type(_0.use_v) == "number") then
+    use_v = _0.use_v ~= 0 and 1 or 0
+end
+local size = math.max(math.floor(tonumber(_0.size) or _2), 1) _2 = nil
+local sharp_col = _5 _5 = nil
+if (type(_0.sharp_col) == "boolean") then
+    sharp_col = _0.sharp_col and 1 or 0
+elseif (type(_0.sharp_col) == "number") then
+    sharp_col = _0.sharp_col ~= 0 and 1 or 0
+end
+local multi_channel_mode = obj.check0 and 1 or 0
+if (type(_0.multi_channel_mode) == "boolean") then
+    multi_channel_mode = _0.multi_channel_mode and 1 or 0
+elseif (type(_0.multi_channel_mode) == "number") then
+    multi_channel_mode = _0.multi_channel_mode ~= 0 and 1 or 0
+end
+local r_level = clamp(tonumber(_0.r_level) or obj.track1, 1, 256)
+local g_level = clamp(tonumber(_0.g_level) or obj.track2, 1, 256)
+local b_level = clamp(tonumber(_0.b_level) or obj.track3, 1, 256)
+local col_space = tonumber(_0.col_space) or _3 _3 = nil
+local mix = clamp(tonumber(_0.mix) or _4, 0.0, 100.0) * 0.01 _4 = nil
+_0 = nil
 
 if (size > 1) then
     local w, h = obj.getpixel()
     local mosaic_params = string.format("bx = %d, by = %d, sharp_col = %d", w / size, h / size, sharp_col)
     obj.effect("Mosaic@Stylize_K", "PI", mosaic_params)
 end
+
 obj.pixelshader("posterize", "object", "object", {
-    multi_channel_mode and 1.0 or 0.0,
-    clamp(r_level, 2, 256), clamp(g_level, 2, 256), clamp(b_level, 2, 256),
-    clamp(level, 2, 256),
-    use_value,
+    multi_channel_mode,
+    r_level, g_level, b_level,
+    level,
+    use_v,
     col_space,
     mix
 })
@@ -323,11 +387,11 @@ local function split_utf8(str)
         local byte = string.byte(str, i)
         local len
 
-        if byte < 0x80 then
+        if (byte < 0x80) then
             len = 1
-        elseif byte < 0xE0 then
+        elseif (byte < 0xE0) then
             len = 2
-        elseif byte < 0xF0 then
+        elseif (byte < 0xF0) then
             len = 3
         else
             len = 4
@@ -456,6 +520,7 @@ end
 --check@_4:Mirror Vertical Edge,0
 --track@_5:Phase,-3600,3600,0,0.01
 --check0:Horizontal Shift,0
+--value@_0:PI,{}
 --[[pixelshader@motion_tile:
 ${SHADER_MOTION_TILE}
 ]]
@@ -464,16 +529,33 @@ obj.setanchor("track", 0, "line")
 
 local w, h = obj.getpixel()
 
-local cx = obj.track0 / w
-local cy = obj.track1 / h
-local out_w = obj.track2 * 0.01
-local out_h = obj.track3 * 0.01
-local tile_w = _1 * 0.01 _1 = nil
-local tile_h = _2 * 0.01 _2 = nil
+_0 = _0 or {}
+local cx = (tonumber(_0.cx) or obj.track0) / w
+local cy = (tonumber(_0.cy) or obj.track1) / h
+local out_w = math.max(tonumber(_0.out_w) or obj.track2, 0.0) * 0.01
+local out_h = math.max(tonumber(_0.out_h) or obj.track3, 0.0) * 0.01
+local tile_w = math.max(tonumber(_0.tile_w) or _1, 0.0) * 0.01 _1 = nil
+local tile_h = math.max(tonumber(_0.tile_h) or _2, 0.0) * 0.01 _2 = nil
 local mirror_h = _3 _3 = nil
+if (type(_0.mirror_h) == "boolean") then
+    mirror_h = _0.mirror_h and 1 or 0
+elseif (type(_0.mirror_h) == "number") then
+    mirror_h = _0.mirror_h ~= 0 and 1 or 0
+end
 local mirror_v = _4 _4 = nil
-local phase = _5 / 360.0 _5 = nil
-local h_shift = obj.check0
+if (type(_0.mirror_v) == "boolean") then
+    mirror_v = _0.mirror_v and 1 or 0
+elseif (type(_0.mirror_v) == "number") then
+    mirror_v = _0.mirror_v ~= 0 and 1 or 0
+end
+local phase = (tonumber(_0.phase) or _5) / 360.0 _5 = nil
+local h_shift = obj.check0 and 1 or 0
+if (type(_0.h_shift) == "boolean") then
+    h_shift = _0.h_shift and 1 or 0
+elseif (type(_0.h_shift) == "number") then
+    h_shift = _0.h_shift ~= 0 and 1 or 0
+end
+_0 = nil
 
 local geo = {}
 local max_w, max_h = obj.getinfo("image_max")
@@ -512,7 +594,7 @@ obj.pixelshader("motion_tile", "tempbuffer", "object", {
     tile_w, tile_h,
     mirror_h, mirror_v,
     phase,
-    h_shift and 1.0 or 0.0
+    h_shift
 })
 
 obj.load("tempbuffer")
@@ -535,20 +617,27 @@ end
 --track@_2:Z Gap,0,1000,100,0.01
 --value@_3:Z Size,math.max(obj.getpixel())
 --check0:Use Group Pivot,1
+--value@_0:PI,{}
 
+_0 = _0 or {}
 local use_group_pivot = obj.check0
+if (type(_0.use_group_pivot) == "boolean") then
+    use_group_pivot = _0.use_group_pivot
+elseif (type(_0.use_group_pivot) == "number") then
+    use_group_pivot = _0.use_group_pivot ~= 0
+end
 
 local count = {
-    x = math.floor(obj.track0) - 1,
-    y = math.floor(obj.track1) - 1,
-    z = math.floor(_1) - 1
+    x = math.max(math.floor(tonumber(_0.x_count) or obj.track0), 1) - 1,
+    y = math.max(math.floor(tonumber(_0.y_count) or obj.track1), 1) - 1,
+    z = math.max(math.floor(tonumber(_0.z_count) or _1), 1) - 1
 }
 _1 = nil
 
 local gap = {
-    x = obj.track2,
-    y = obj.track3,
-    z = _2
+    x = math.max(tonumber(_0.x_gap) or obj.track2, 0.0),
+    y = math.max(tonumber(_0.y_gap) or obj.track3, 0.0),
+    z = math.max(tonumber(_0.z_gap) or _2, 0.0)
 }
 _2 = nil
 
@@ -556,9 +645,10 @@ local w, h = obj.getpixel()
 local res = {
     x = w,
     y = h,
-    z = math.max(_3 or math.max(w, h), 0.0)
+    z = math.max(tonumber(_3) or math.max(w, h), 0.0)
 }
 _3 = nil
+_0 = nil
 
 local half_res = {
     x = res.x * 0.5,
@@ -649,7 +739,7 @@ end
 _0 = _0 or {}
 local copies = math.max(math.floor(tonumber(_0.copies) or obj.track0), 1)
 local offset = math.floor(tonumber(_0.offset) or _1) _1 = nil
-local composite = math.floor(tonumber(_0.composite) or _2) _2 = nil
+local composite = tonumber(_0.composite) or _2 _2 = nil
 local rel_pos = obj.check0
 if (type(_0.rel_pos) == "boolean") then
     rel_pos = _0.rel_pos
@@ -707,6 +797,7 @@ end
 --select@_6:Color Space=1,Linear=0,sRGB=1
 --select@_7:Blend Mode,Normal=0,Add=1,Subtract=2,Multiply=3,Screen=4,Overlay=5,Lighten=6,Darken=7,Luminosity=8,Chroma=9,Linear Burn=10,Linear Light=11,Difference=12
 --track@_8:Mix,0,100,100,0.01
+--value@_0:PI,{}
 --[[pixelshader@gradient_map:
 ${SHADER_UTILS}
 ${SHADER_MAP_UTILS}
@@ -718,24 +809,41 @@ ${SHADER_MAP_UTILS}
 ${SHADER_MAP_VIEWER}
 ]]
 
-local map_path = _1 _1 = nil
-local map_layer = obj.track0
+local function clamp(v, min, max)
+    return math.max(math.min(v, max), min)
+end
+
+_0 = _0 or {}
+local map_path = _0.map_path and tostring(_0.map_path) or _1 _1 = nil
+local map_layer = math.floor(tonumber(_0.map_layer) or obj.track0)
 local use_rel_layer = _9 ~= 0 _9 = nil
+if (type(_0.use_rel_layer) == "boolean") then
+    use_rel_layer = _0.use_rel_layer
+elseif (type(_0.use_rel_layer) == "number") then
+    use_rel_layer = _0.use_rel_layer ~= 0
+end
 local view_map = obj.check0
-local map_hue = _2 _2 = nil
-local map_slice = obj.track1 * 0.01
-local map_scale = obj.track2 * 0.01
-local map_shift = obj.track3 * 0.01
-local map_edges = _3 _3 = nil
+if (type(_0.view_map) == "boolean") then
+    view_map = _0.view_map
+elseif (type(_0.view_map) == "number") then
+    use_rel_layer = _0.use_rel_layer ~= 0
+end
+local map_hue = tonumber(_0.map_hue) or _2 _2 = nil
+local map_slice = clamp(tonumber(_0.map_slice) or obj.track1, 0.0, 100.0) * 0.01
+local map_scale = math.max(tonumber(_0.map_scale) or obj.track2, 0.0) * 0.01
+local map_shift = tonumber(_0.map_shift) or obj.track3 * 0.01
+local map_edges = tonumber(_0.map_edges) or _3 _3 = nil
 local inv_luma = _4 _4 = nil
-local luma_mode = _5 _5 = nil
-local col_space = _6 _6 = nil
-local blend_mode = _7 _7 = nil
-local mix = _8 * 0.01 _8= nil
-
-local geo = {}
-local map_w, map_h
-
+if (type(_0.inv_luma) == "boolean") then
+    inv_luma = _0.inv_luma and 1 or 0
+elseif (type(_0.inv_luma) == "number") then
+    inv_luma = _0.inv_luma ~= 0 and 1 or 0
+end
+local luma_mode = tonumber(_0.luma_mode) or _5 _5 = nil
+local col_space = tonumber(_0.col_space) or _6 _6 = nil
+local blend_mode = tonumber(_0.blend_mode) or _7 _7 = nil
+local mix = clamp(tonumber(_0.mix) or _8, 0.0, 100.0) * 0.01 _8= nil
+_0 = nil
 
 local function err_handler(e)
     local hint = "Hint: Try increasing TemporaryImageCacheSize in system.conf."
@@ -749,6 +857,8 @@ local function copy_geo(dst, src)
 end
 
 local ok, e = pcall(function()
+local geo = {}
+local map_w, map_h
 local layer = use_rel_layer and math.max(obj.layer + map_layer, 1) or math.max(map_layer, 0)
 if (map_path == "" and (layer == 0 or layer == obj.layer)) then
     debug_print("The map not found.")
@@ -819,12 +929,14 @@ end
 --infomation:Unpremultiply${SCRIPT_NAME} ${VERSION}
 --label:${LABEL}
 --track0:Gain,0,1000,100,0.01
+--value@_0:PI,{}
 --[[pixelshader@unpremult:
 ${SHADER_UNPREMULT}
 ]]
 
-local gain = obj.track0 * 0.01
-
+_0 = _0 or {}
+local gain = math.max(tonumber(_0.gain) or obj.track0, 0.0) * 0.01
+_0 = nil
 
 obj.pixelshader("unpremult", "object", "object", {
     gain
