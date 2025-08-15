@@ -1,4 +1,4 @@
-float EPSILON = 1.0e-6;
+float EPSILON = 1.0e-5;
 
 inline bool is_zero(float val) {
     return abs(val) < EPSILON;

@@ -227,6 +227,222 @@ obj.pixelshader("posterize", "object", "object", {
 })
 
 
+@ASCII
+--infomation:ASCII${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--value@_1:Glyphs,"@#%*+=-:. "
+--font@_2:Font,Yu Gothic UI
+--track@_3:Padding,-100,100,0,1
+--track0:X Blocks,1,16384,80,1
+--track1:Y Blocks,1,16384,45,1
+--check0:Sharp Colors,0
+--track@_4:Luma Gain,0,1000,100,0.01
+--track2:Min Luma,0,100,0,0.01
+--track3:Max Luma,0,100,100,0.01
+--select@_5:Luma Mode=1,BT.601=0,BT.709=1,BT.2020=2
+--check@_6:Invert Luma,0
+--select@_7:Glyph Type=0,Solid=0,Original=1,Mosaic=2
+--color@_8:Glyph Color,0x0000000
+--select@_9:Canvas Type=1,Transparent=0,Solid=1,Original=2,Mosaic=3
+--color@_10:Canvas Color,0xffffff
+--select@_11:Color Space=1,Linear=0,sRGB=1
+--select@_12:Blend Mode,Normal=0,Add=1,Subtract=2,Multiply=3,Screen=4,Overlay=5,Lighten=6,Darken=7,Luminosity=8,Chroma=9,Linear Burn=10,Linear Light=11,Difference=12
+--track@_13:Mix,0,100,100,0.01
+--check@_14:Shuffle Glyphs,0
+--track@_15:Interval,0,100,0,1
+--track@_16:Seed,-1000,1000,-1,1
+--value@_0:PI,{}
+--[[pixelshader@ascii:
+${SHADER_UTILS}
+${SHADER_ASCII}
+]]
+
+local function clamp(v, min, max)
+    return math.max(math.min(v, max), min)
+end
+
+_0 = _0 or {}
+local glyphs_str = _0.glyphs and tostring(_0.glyphs) or _1 _1 = nil
+local font = _0.font and tostring(_0.font) or _2 _2 = nil
+local padding = math.floor(tonumber(_0.padding) or _3) _3 = nil
+local bx = clamp(math.floor(tonumber(_0.bx) or obj.track0), 1, 16384)
+local by = clamp(math.floor(tonumber(_0.by) or obj.track1), 1, 16384)
+local sharp_col = obj.check0 and 1 or 0
+if (type(_0.sharp_col) == "boolean") then
+    sharp_col = _0.sharp_col and 1 or 0
+elseif (type(_0.sharp_col) == "number") then
+    sharp_col = _0.sharp_col ~= 0 and 1 or 0
+end
+local luma_gain = math.max(tonumber(_0.luma_gain) or _4, 0.0) * 0.01 _4 = nil
+local min_luma = clamp(tonumber(_0.min_luma) or obj.track2, 0.0, 100.0) * 0.01
+local max_luma = clamp(tonumber(_0.max_luma) or obj.track3, 0.0, 100.0) * 0.01
+local luma_mode = tonumber(_0.luma_mode) or _5 _5 = nil
+local inv_luma = _6 _6 = nil
+if (type(_0.inv_luma) == "boolean") then
+    inv_luma = _0.inv_luma and 1 or 0
+elseif (type(_0.inv_luma) == "number") then
+    inv_luma = _0.inv_luma ~= 0 and 1 or 0
+end
+local glyph_type = tonumber(_0.glyph_type) or _7 _7 = nil
+local glyph_col = clamp(tonumber(_0.glyph_col) or _8, 0x000000, 0xffffff) _8 = nil
+local canvas_type = tonumber(_0.canvas_type) or _9 _9 = nil
+local canvas_col = clamp(tonumber(_0.canvas_col) or _10, 0x000000, 0xffffff) _10 = nil
+local col_space = tonumber(_0.col_space) or _11 _11 = nil
+local blend_mode = tonumber(_0.blend_mode) or _12 _12= nil
+local mix = clamp(tonumber(_0.mix) or _13, 0.0, 100.0) * 0.01 _13 = nil
+local shuf_glyphs = _14 ~= 0 _14 = nil
+if (type(_0.shuf_glyphs) == "boolean") then
+    shuf_glyphs = _0.shuf_glyphs
+elseif (type(_0.shuf_glyphs) == "number") then
+    shuf_glyphs = _0.inv_luma ~= 0
+end
+local interval = math.max(tonumber(_0.interval) or _15, 0) _15 = nil
+local seed = tonumber(_0.seed) or _16 _16 = nil
+_0 = nil
+
+if (glyphs_str == "") then
+    debug_print("The text cannot be empty.")
+    return
+end
+
+local function err_handler(e)
+    local hint = "Hint: Try increasing TemporaryImageCacheSize in system.conf."
+    debug_print(string.format("%s. %s", e, hint))
+end
+
+local function copy_geo(dst, src)
+    for k in ("ox, oy, oz, cx, cy, cz, rx, ry, rz, zoom, aspect, alpha"):gmatch("%a+") do
+        dst[k] = src[k]
+    end
+end
+
+local function split_utf8(str)
+    local t = {}
+    local i = 1
+    while i <= #str do
+        local byte = string.byte(str, i)
+        local len
+
+        if byte < 0x80 then
+            len = 1
+        elseif byte < 0xE0 then
+            len = 2
+        elseif byte < 0xF0 then
+            len = 3
+        else
+            len = 4
+        end
+
+        table.insert(t, string.sub(str, i, i + len - 1))
+        i = i + len
+    end
+    return t
+end
+
+local function shuffle(t)
+    local f = interval > 0 and math.floor(obj.frame / interval) or 0
+    for i = #t, 2, -1 do
+        local j = obj.rand(1, i, seed, f)
+        t[i], t[j] = t[j], t[i]
+    end
+end
+
+local ok, e = pcall(function()
+    local geo = {}
+    local blend = glyph_type == 1 and "mask" or "copy"
+    local col_list = {0xff0000, 0x00ff00, 0x0000ff}
+    local w, h = obj.getpixel()
+    local max_w, max_h = obj.getinfo("image_max")
+    local bw, bh = math.floor(w / bx), math.floor(h / by)
+    local mosaic_params = string.format("bx = %d, by = %d, sharp_col = %d", bx, by, sharp_col)
+    local size = math.max(math.min(bw, bh) - padding * 2, 0)
+    local glyphs = split_utf8(glyphs_str)
+    local len = #glyphs
+    local map_w, map_h = bw * math.ceil(len / 3.0), bh
+    if (map_w > max_w or map_h > max_h) then
+        debug_print("The font size is too large or the text is too long.")
+        return
+    end
+
+    copy_geo(geo, obj)
+    obj.copybuffer("cache:img", "object")
+    obj.effect("Mosaic@Stylize_K", "PI", mosaic_params)
+    obj.copybuffer("cache:mosaic", "object")
+
+    obj.setoption("drawtarget", "tempbuffer", map_w, map_h)
+    obj.setoption("blend", 1)
+    if (shuf_glyphs) then
+        shuffle(glyphs)
+    end
+
+    local a = -0.5 * (map_w - bw)
+    for i = 1, len do
+        local idx = i - 1
+        obj.setfont(font, size, 0, col_list[(idx % 3) + 1])
+        obj.load("text", glyphs[i])
+        obj.draw(a + bw * (math.floor(idx / 3)))
+    end
+
+    obj.copybuffer("object", "cache:img")
+    obj.pixelshader("ascii", "object", {
+        "cache:mosaic",
+        "tempbuffer"
+    }, {
+        bx, by,
+        w, h,
+        map_w, map_h,
+        min_luma, max_luma,
+        len,
+        luma_gain,
+        luma_mode,
+        inv_luma,
+        glyph_type,
+        glyph_col,
+        col_space
+    }, blend)
+
+    if (canvas_type == 1) then
+        obj.setoption("drawtarget", "tempbuffer", w, h)
+        obj.clearbuffer("cache:img")
+        obj.clearbuffer("cache:mosaic")
+
+        obj.copybuffer("cache:ascii", "object")
+        obj.load("figure", "四角形", canvas_col, 1)
+        local half_w, half_h = w * 0.5, h * 0.5
+        obj.drawpoly(
+            -half_w, -half_h, 0,
+            half_w,  -half_h, 0,
+            half_w,  half_h,  0,
+            -half_w, half_h,  0
+        )
+        obj.copybuffer("object", "cache:ascii")
+    elseif (canvas_type == 2) then
+        obj.copybuffer("tempbuffer", "cache:img")
+        obj.clearbuffer("cache:img")
+        obj.clearbuffer("cache:mosaic")
+    elseif (canvas_type == 3) then
+        obj.copybuffer("tempbuffer", "cache:mosaic")
+        obj.clearbuffer("cache:img")
+        obj.clearbuffer("cache:mosaic")
+    else
+        obj.setoption("drawtarget", "tempbuffer", w, h)
+        obj.clearbuffer("cache:img")
+        obj.clearbuffer("cache:mosaic")
+    end
+
+    obj.setoption("blend", blend_mode)
+    obj.draw(0, 0, 0, 1, mix)
+    obj.setoption("blend", 0)
+
+    obj.load("tempbuffer")
+    obj.clearbuffer("tempbuffer")
+    copy_geo(obj, geo)
+end)
+if (not ok) then
+    err_handler(e)
+end
+
+
 @MotionTile
 --infomation:MotionTile${SCRIPT_NAME} ${VERSION}
 --label:${LABEL}
