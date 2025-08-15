@@ -16,12 +16,12 @@ local r_gain = obj.track0 * 0.01
 local g_gain = obj.track1 * 0.01
 local b_gain = obj.track2 * 0.01
 local a_gain = obj.track3 * 0.01
-local color_space = _1 _1 = nil
+local col_space = _1 _1 = nil
 local mix = _2 * 0.01 _2 = nil
 
 obj.pixelshader("saturate", "object", "object", {
     r_gain, g_gain, b_gain, a_gain,
-    color_space,
+    col_space,
     mix
 })
 
@@ -121,7 +121,7 @@ local light_col = _2 _2 = nil
 local light_a = obj.track2 * 0.01
 local dark_col = _3 _3 = nil
 local dark_a = obj.track3 * 0.01
-local color_space = _4 _4 = nil
+local col_space = _4 _4 = nil
 local mix = obj.track1 * 0.01
 
 
@@ -133,7 +133,7 @@ obj.pixelshader("thresholding", "object", "object", {
     light_a,
     dark_col,
     dark_a,
-    color_space,
+    col_space,
     mix
 })
 
@@ -166,7 +166,7 @@ local inv_g = _2 _2 = nil
 local inv_b = _3 _3 = nil
 local inv_a = _4 _4 = nil
 local disable_a = obj.check0
-local color_space = _5 _5 = nil
+local col_space = _5 _5 = nil
 local mix = _6 * 0.01 _6 = nil
 
 
@@ -174,7 +174,7 @@ obj.pixelshader("thresholding_rgba", "object", "object", {
     r_threshold, g_threshold, b_threshold, a_threshold,
     inv_r, inv_g, inv_b, inv_a,
     disable_a and 1.0 or 0.0,
-    color_space,
+    col_space,
     mix
 })
 
@@ -200,12 +200,12 @@ ${SHADER_POSTERIZE}
 local level = math.floor(obj.track0)
 local use_value = _1 _1 = nil
 local size = math.floor(_2) _2 = nil
-local sharp_color = _5 _5 = nil
+local sharp_col = _5 _5 = nil
 local multi_channel_mode = obj.check0
 local r_level = obj.track1
 local g_level = obj.track2
 local b_level = obj.track3
-local color_space = _3 _3 = nil
+local col_space = _3 _3 = nil
 local mix = _4 * 0.01 _4 = nil
 
 local function clamp(v, min, max)
@@ -214,7 +214,7 @@ end
 
 if (size > 1) then
     local w, h = obj.getpixel()
-    local mosaic_params = string.format("bx = %d, by = %d, sharp_col = %d", w / size, h / size, sharp_color)
+    local mosaic_params = string.format("bx = %d, by = %d, sharp_col = %d", w / size, h / size, sharp_col)
     obj.effect("Mosaic@Stylize_K", "PI", mosaic_params)
 end
 obj.pixelshader("posterize", "object", "object", {
@@ -222,7 +222,7 @@ obj.pixelshader("posterize", "object", "object", {
     clamp(r_level, 2, 256), clamp(g_level, 2, 256), clamp(b_level, 2, 256),
     clamp(level, 2, 256),
     use_value,
-    color_space,
+    col_space,
     mix
 })
 
@@ -631,25 +631,25 @@ end
 --infomation:Repeat${SCRIPT_NAME} ${VERSION}
 --label:${LABEL}
 --track0:Copies,1,1000,3,1
---track@_7:Offset,-1000,1000,0,1
---select@_9:Composite,Below=0,Above=1
+--track@_1:Offset,-1000,1000,0,1
+--select@_2:Composite,Below=0,Above=1
 --check0:Relative Position,0
 --track1:X,-100000,100000,100,0.01
 --track2:Y,-100000,100000,0,0.01
 --track3:Z,-100000,100000,0,0.01
---track@_1:X Rotation,-3600,3600,0,0.01
---track@_2:Y Rotation,-3600,3600,0,0.01
---track@_3:Z Rotation,-3600,3600,0,0.01
---track@_4:Zoom,0,10000,100,0.001
---track@_5:Start Alpha,0,100,100,0.01
---track@_6:End Alpha,0,100,100,0.01
---value@_8:Z Size,math.max(obj.getpixel())
+--track@_3:X Rotation,-3600,3600,0,0.01
+--track@_4:Y Rotation,-3600,3600,0,0.01
+--track@_5:Z Rotation,-3600,3600,0,0.01
+--track@_6:Zoom,0,10000,100,0.001
+--track@_7:Start Alpha,0,100,100,0.01
+--track@_8:End Alpha,0,100,100,0.01
+--value@_9:Z Size,math.max(obj.getpixel())
 --value@_0:PI,{}
 
 _0 = _0 or {}
 local copies = math.max(math.floor(tonumber(_0.copies) or obj.track0), 1)
-local offset = math.floor(tonumber(_0.offset) or _7) _7 = nil
-local composite = math.floor(tonumber(_0.composite) or _9) _9 = nil
+local offset = math.floor(tonumber(_0.offset) or _1) _1 = nil
+local composite = math.floor(tonumber(_0.composite) or _2) _2 = nil
 local rel_pos = obj.check0
 if (type(_0.rel_pos) == "boolean") then
     rel_pos = _0.rel_pos
@@ -659,13 +659,13 @@ end
 local x = tonumber(_0.x) or obj.track1
 local y = tonumber(_0.y) or obj.track2
 local z = tonumber(_0.z) or obj.track3
-local rx = tonumber(_0.rx) or _1 _1 = nil
-local ry = tonumber(_0.ry) or _2 _2 = nil
-local rz = tonumber(_0.rz) or _3 _3 = nil
-local scale = math.max(tonumber(_0.zoom) or _4, 0.0) * 0.01 _4 = nil
-local a_st = math.max(tonumber(_0.st_alpha) or _5, 0.0) * 0.01 _5 = nil
-local a_ed = math.max(tonumber(_0.ed_alpha) or _6, 0.0) * 0.01 _6 = nil
-local z_size = tonumber(_8) _8 = nil
+local rx = tonumber(_0.rx) or _3 _3 = nil
+local ry = tonumber(_0.ry) or _4 _4 = nil
+local rz = tonumber(_0.rz) or _5 _5 = nil
+local scale = math.max(tonumber(_0.zoom) or _6, 0.0) * 0.01 _6 = nil
+local a_st = math.max(tonumber(_0.st_alpha) or _7, 0.0) * 0.01 _7 = nil
+local a_ed = math.max(tonumber(_0.ed_alpha) or _8, 0.0) * 0.01 _8 = nil
+local z_size = tonumber(_9) _9 = nil
 _0 = nil
 
 local a_grad = a_ed - a_st
@@ -729,7 +729,7 @@ local map_shift = obj.track3 * 0.01
 local map_edges = _3 _3 = nil
 local inv_luma = _4 _4 = nil
 local luma_mode = _5 _5 = nil
-local color_space = _6 _6 = nil
+local col_space = _6 _6 = nil
 local blend_mode = _7 _7 = nil
 local mix = _8 * 0.01 _8= nil
 
@@ -795,7 +795,7 @@ obj.pixelshader("gradient_map", "cache:img", {"cache:img", "object"}, {
     map_edges,
     inv_luma,
     luma_mode,
-    color_space
+    col_space
 })
 
 obj.copybuffer("object", "cache:img")

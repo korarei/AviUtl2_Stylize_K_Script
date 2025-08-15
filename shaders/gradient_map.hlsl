@@ -1,7 +1,7 @@
-Texture2D texture0 : register(t0);
+Texture2D src : register(t0);
 Texture2D map : register(t1);
 SamplerState map_smp : register(s1);
-cbuffer constant0 : register(b0) {
+cbuffer params : register(b0) {
     float2 map_size;
     float map_slice;
     float map_scale;
@@ -9,7 +9,7 @@ cbuffer constant0 : register(b0) {
     float map_edges;
     float inv_luma;
     float luma_mode;
-    float color_space;
+    float col_space;
 };
 
 struct PS_INPUT {
@@ -18,10 +18,10 @@ struct PS_INPUT {
 };
 
 float4 gradient_map(PS_INPUT input) : SV_Target {
-    float4 tex = texture0.Load(int3(input.pos.xy, 0));
+    float4 tex = src.Load(int3(input.pos.xy, 0));
     float4 col = unpremul_col(tex);
 
-    float4 lin_col = to_linear(col, color_space);
+    float4 lin_col = to_linear(col, col_space);
     float luma = saturate(calc_luma(lin_col.rgb, luma_mode));
     luma = lerp(luma, 1.0 - luma, inv_luma);
     float2 map_uv = edit_map(luma, map_slice, map_scale, map_shift, map_edges);
