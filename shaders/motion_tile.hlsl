@@ -1,6 +1,6 @@
-Texture2D texture0 : register(t0);
-SamplerState sampler0 : register(s0);
-cbuffer constant0 : register(b0) {
+Texture2D src : register(t0);
+SamplerState src_smp : register(s0);
+cbuffer params : register(b0) {
     float2 tex_size;
     float2 center;
     float2 output_gain;
@@ -22,7 +22,7 @@ float4 tiler(float2 pos) {
     float2 coord = lerp(uv, 1.0 - uv, mirror * parity);
 
     float2 e = 0.5 * rcp(tex_size);
-    return texture0.Sample(sampler0, clamp(coord, e, 1.0 - e));
+    return src.Sample(src_smp, clamp(coord, e, 1.0 - e));
 }
 
 float4 motion_tile(PS_INPUT input) : SV_Target {

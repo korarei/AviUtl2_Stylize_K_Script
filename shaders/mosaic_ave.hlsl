@@ -1,5 +1,5 @@
-RWTexture2D<half4> tex_out : register(u0);
-Texture2D tex_in : register(t0);
+RWTexture2D<half4> dst : register(u0);
+Texture2D src : register(t0);
 cbuffer params : register(b0) {
     float2 blocks;
     float2 res;
@@ -29,7 +29,7 @@ void mosaic_ave(CS_INPUT input) {
         uint l_cnt = 0;
         for (uint y = st.y + input.gtid.y; y < ed.y; y += 8) {
             for (uint x = st.x + input.gtid.x; x < ed.x; x += 8) {
-                l_col += tex_in[uint2(x, y)];
+                l_col += src[uint2(x, y)];
                 l_cnt++;
             }
         }
@@ -48,7 +48,7 @@ void mosaic_ave(CS_INPUT input) {
         if (input.gidx == 0) {
             float4 col = col_buf[0];
             uint cnt = cnt_buf[0];
-            tex_out[block_idx] = col * rcp(max(cnt, 1));
+            dst[block_idx] = col * rcp(max(cnt, 1));
         }
     }
 }
