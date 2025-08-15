@@ -304,17 +304,18 @@ obj.pixelshader("posterize", "object", "object", {
 --track2:Min Luma,0,100,0,0.01
 --track3:Max Luma,0,100,100,0.01
 --select@_5:Luma Mode=1,BT.601=0,BT.709=1,BT.2020=2
---check@_6:Invert Luma,0
+--check@_6:Invert Luma,1
 --select@_7:Glyph Type=0,Solid=0,Original=1,Mosaic=2
---color@_8:Glyph Color,0x0000000
---select@_9:Canvas Type=1,Transparent=0,Solid=1,Original=2,Mosaic=3
---color@_10:Canvas Color,0xffffff
+--color@_8:Glyph Color,0xffffff
+--select@_9:Canvas Type,Transparent=0,Solid=1,Original=2,Mosaic=3
+--color@_10:Canvas Color,0x000000
 --select@_11:Color Space=1,Linear=0,sRGB=1
---select@_12:Blend Mode,Normal=0,Add=1,Subtract=2,Multiply=3,Screen=4,Overlay=5,Lighten=6,Darken=7,Luminosity=8,Chroma=9,Linear Burn=10,Linear Light=11,Difference=12
---track@_13:Mix,0,100,100,0.01
---check@_14:Shuffle Glyphs,0
---track@_15:Interval,0,100,0,1
---track@_16:Seed,-1000,1000,-1,1
+--select@_12:Alpha,None=0,Premultiplied=1
+--select@_13:Blend Mode,Normal=0,Add=1,Subtract=2,Multiply=3,Screen=4,Overlay=5,Lighten=6,Darken=7,Luminosity=8,Chroma=9,Linear Burn=10,Linear Light=11,Difference=12
+--track@_14:Mix,0,100,100,0.01
+--check@_15:Shuffle Glyphs,0
+--track@_16:Interval,0,100,0,1
+--track@_17:Seed,-1000,1000,-1,1
 --value@_0:PI,{}
 --[[pixelshader@ascii:
 ${SHADER_UTILS}
@@ -352,16 +353,17 @@ local glyph_col = clamp(tonumber(_0.glyph_col) or _8, 0x000000, 0xffffff) _8 = n
 local canvas_type = tonumber(_0.canvas_type) or _9 _9 = nil
 local canvas_col = clamp(tonumber(_0.canvas_col) or _10, 0x000000, 0xffffff) _10 = nil
 local col_space = tonumber(_0.col_space) or _11 _11 = nil
-local blend_mode = tonumber(_0.blend_mode) or _12 _12= nil
-local mix = clamp(tonumber(_0.mix) or _13, 0.0, 100.0) * 0.01 _13 = nil
-local shuf_glyphs = _14 ~= 0 _14 = nil
+local alpha = tonumber(_0.alpha) or _12 _12 = nil
+local blend_mode = tonumber(_0.blend_mode) or _13 _13= nil
+local mix = clamp(tonumber(_0.mix) or _14, 0.0, 100.0) * 0.01 _14 = nil
+local shuf_glyphs = _15 ~= 0 _15 = nil
 if (type(_0.shuf_glyphs) == "boolean") then
     shuf_glyphs = _0.shuf_glyphs
 elseif (type(_0.shuf_glyphs) == "number") then
     shuf_glyphs = _0.inv_luma ~= 0
 end
-local interval = math.max(tonumber(_0.interval) or _15, 0) _15 = nil
-local seed = tonumber(_0.seed) or _16 _16 = nil
+local interval = math.max(tonumber(_0.interval) or _16, 0) _16 = nil
+local seed = tonumber(_0.seed) or _17 _17 = nil
 _0 = nil
 
 if (glyphs_str == "") then
@@ -462,7 +464,8 @@ local ok, e = pcall(function()
         inv_luma,
         glyph_type,
         glyph_col,
-        col_space
+        col_space,
+        alpha
     }, blend)
 
     if (canvas_type == 1) then
