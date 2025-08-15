@@ -615,11 +615,20 @@ end
 --track2:X Gap,0,1000,100,0.01
 --track3:Y Gap,0,1000,100,0.01
 --track@_2:Z Gap,0,1000,100,0.01
---value@_3:Z Size,math.max(obj.getpixel())
+--track@_4:X Offset,-1000,1000,0,0.01
+--track@_5:Y Offset,-1000,1000,0,0.01
+--check@_6:Mirror Copies,1
 --check0:Use Group Pivot,1
+--value@_3:Z Size,math.max(obj.getpixel())
 --value@_0:PI,{}
 
 _0 = _0 or {}
+local mirror_copies = _6 ~= 0 _6 = nil
+if (type(_0.mirror_copies) == "boolean") then
+    mirror_copies = _0.mirror_copies
+elseif (type(_0.mirror_copies) == "number") then
+    mirror_copies = _0.mirror_copies ~= 0
+end
 local use_group_pivot = obj.check0
 if (type(_0.use_group_pivot) == "boolean") then
     use_group_pivot = _0.use_group_pivot
@@ -635,11 +644,18 @@ local count = {
 _1 = nil
 
 local gap = {
-    x = math.max(tonumber(_0.x_gap) or obj.track2, 0.0),
-    y = math.max(tonumber(_0.y_gap) or obj.track3, 0.0),
-    z = math.max(tonumber(_0.z_gap) or _2, 0.0)
+    x = math.max(tonumber(_0.x_gap) or obj.track2, 0.0) * 0.01,
+    y = math.max(tonumber(_0.y_gap) or obj.track3, 0.0) * 0.01,
+    z = math.max(tonumber(_0.z_gap) or _2, 0.0) * 0.01
 }
 _2 = nil
+
+local offset = {
+    x = (tonumber(_0.x_offset) or _4) * 0.01,
+    y = (tonumber(_0.y_offset) or _5) * 0.01
+}
+_4 = nil
+_5 = nil
 
 local w, h = obj.getpixel()
 local res = {
@@ -656,20 +672,28 @@ local half_res = {
 }
 
 -- Arithmetic Progression
+-- Offset
+local o = {
+    x = offset.x * res.x / count.y,
+    y = offset.y * res.y / count.x
+}
+
 -- Common Difference
 local d = {
-    x = res.x * gap.x * 0.01,
-    y = res.y * gap.y * 0.01,
-    z = res.z * gap.z * 0.01
+    x = res.x * gap.x,
+    y = res.y * gap.y,
+    z = res.z * gap.z
 }
 
 -- First Term
-local a = {
-    x = -0.5 * d.x * count.x,
-    y = -0.5 * d.y * count.y,
-    z = -0.5 * d.z * count.z
-}
-
+local a = {x = 0.0, y = 0.0, z = 0.0}
+if (mirror_copies) then
+    a = {
+        x = -0.5 * (d.x * count.x + offset.x * res.x),
+        y = -0.5 * (d.y * count.y + offset.y * res.y),
+        z = -0.5 * d.z * count.z
+    }
+end
 
 obj.effect()
 if (use_group_pivot) then
@@ -679,13 +703,16 @@ if (use_group_pivot) then
         local z = a.z + d.z * l
         for m = 0, count.x do
             local x = a.x + d.x * m
-            local left = x - half_res.x
-            local right = x + half_res.x
-
             for n = 0, count.y do
                 local y = a.y + d.y * n
-                local top = y - half_res.y
-                local bottom = y + half_res.y
+
+                local ox = x + o.x * n
+                local oy = y + o.y * m
+
+                local left = ox - half_res.x
+                local right = ox + half_res.x
+                local top = oy - half_res.y
+                local bottom = oy + half_res.y
                 polys[idx] = {
                     left,  top,    z,
                     right, top,    z,
