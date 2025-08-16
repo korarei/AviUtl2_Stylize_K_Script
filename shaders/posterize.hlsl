@@ -1,9 +1,7 @@
 Texture2D src : register(t0);
 cbuffer params : register(b0) {
-    float multi_channel_mode;
-    float3 levels;
     float level;
-    float use_v;
+    float channel;
     float col_space;
     float mix;
 };
@@ -15,15 +13,23 @@ struct PS_INPUT {
 
 float4 quantize_col(float4 col) {
     const float adj = 255.0 * rcp(256.0);
-    if (bool(multi_channel_mode)) {
-        return float4(floor(col.rgb * levels * adj) * rcp(max(levels - 1.0, 1.0)), col.a);
-    } else if (bool(use_v)) {
-        float3 rgb = saturate(col.rgb);
-        float3 hsv = rgb2hsv(rgb);
-        hsv.z = saturate(floor(hsv.z * level * adj) * rcp(max(level - 1.0, 1.0)));
-        return float4(hsv2rgb(hsv), col.a);
-    } else {
-        return float4(floor(col.rgb * level * adj) * rcp(max(level - 1.0, 1.0)), col.a);
+
+    uint mode = uint(channel);
+    float flag = float(mode % 2);
+    switch (mode / 2) {
+        case 0: {
+            float4 q = floor(col * level * adj) * rcp(max(level - 1.0, 1.0));
+            return lerp(float4(q.rgb, col.a), q, flag);
+        }
+        case 1: {
+            float3 rgb = saturate(col.rgb);
+            float4 hsva = float4(rgb2hsv(rgb), col.a);
+            hsva.zw = saturate(floor(hsva.zw * level * adj) * rcp(max(level - 1.0, 1.0)));
+            float4 q = float4(hsv2rgb(hsva.xyz), hsva.a);
+            return lerp(float4(q.rgb, col.a), q, flag);
+        }
+        default:
+            return col;
     }
 }
 
