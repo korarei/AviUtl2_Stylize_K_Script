@@ -12,6 +12,7 @@ cbuffer params : register(b0) {
     float glyph_type;
     float glyph_col;
     float col_space;
+    float alpha;
 };
 
 struct PS_INPUT {
@@ -31,9 +32,10 @@ float4 ascii(PS_INPUT input) : SV_Target {
     const float adj = 255.0 * rcp(256.0);
 
     float4 tex = mosaic.Load(int3(input.pos.xy, 0));
-    float4 col = unpremul_col(tex);
+    float4 col = lerp(float4(tex.rgb, 1.0), unpremul_col(tex), step(0.5, alpha));
     float4 lin_col = to_linear(col, col_space);
     float luma = saturate(calc_luma(lin_col.rgb, luma_mode) * luma_gain);
+    float mask = step(luma_range.x, luma) * step(luma, luma_range.y);
     luma = lerp(luma, 1.0 - luma, inv_luma);
 
     float2 block_size = res * rcp(blocks);
@@ -45,6 +47,5 @@ float4 ascii(PS_INPUT input) : SV_Target {
 
     float flag = step(2.0, glyph_type);
     float4 glyph = lerp(decode_col(glyph_col, shape), float4(col.rgb, shape), flag);
-    float mask = step(luma_range.x, luma) * step(luma, luma_range.y);
     return lerp(float4(0.0, 0.0, 0.0, 0.0), premul_col(glyph), mask);
 }
