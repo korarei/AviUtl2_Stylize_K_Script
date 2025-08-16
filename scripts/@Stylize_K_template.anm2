@@ -771,7 +771,6 @@ end
 --track0:Copies,1,1000,3,1
 --track@_1:Offset,-1000,1000,0,1
 --select@_2:Composite,Below=0,Above=1
---check0:Relative Position,0
 --track1:X,-100000,100000,100,0.01
 --track2:Y,-100000,100000,0,0.01
 --track3:Z,-100000,100000,0,0.01
@@ -781,19 +780,12 @@ end
 --track@_6:Zoom,0,10000,100,0.001
 --track@_7:Start Alpha,0,100,100,0.01
 --track@_8:End Alpha,0,100,100,0.01
---value@_9:Z Size,math.max(obj.getpixel())
 --value@_0:PI,{}
 
 _0 = _0 or {}
 local copies = math.max(math.floor(tonumber(_0.copies) or obj.track0), 1)
 local offset = math.floor(tonumber(_0.offset) or _1) _1 = nil
 local composite = tonumber(_0.composite) or _2 _2 = nil
-local rel_pos = obj.check0
-if (type(_0.rel_pos) == "boolean") then
-    rel_pos = _0.rel_pos
-elseif (type(_0.rel_pos) == "number") then
-    rel_pos = _0.rel_pos ~= 0
-end
 local x = tonumber(_0.x) or obj.track1
 local y = tonumber(_0.y) or obj.track2
 local z = tonumber(_0.z) or obj.track3
@@ -803,7 +795,6 @@ local rz = tonumber(_0.rz) or _5 _5 = nil
 local scale = math.max(tonumber(_0.zoom) or _6, 0.0) * 0.01 _6 = nil
 local a_st = math.max(tonumber(_0.st_alpha) or _7, 0.0) * 0.01 _7 = nil
 local a_ed = math.max(tonumber(_0.ed_alpha) or _8, 0.0) * 0.01 _8 = nil
-local z_size = tonumber(_9) _9 = nil
 _0 = nil
 
 local a_grad = a_ed - a_st
@@ -811,12 +802,6 @@ local last_idx = copies - 1
 local st, ed, step = 0, last_idx, 1
 if (composite == 0) then
     st, ed, step = ed, st, -1
-end
-if (rel_pos) then
-    local w, h = obj.getpixel()
-    x = w * x * 0.01
-    y = h * y * 0.01
-    z = (z_size or math.max(w ,h)) * z * 0.01
 end
 
 obj.effect()
