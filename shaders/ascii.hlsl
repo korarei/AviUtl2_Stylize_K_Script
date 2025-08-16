@@ -32,7 +32,7 @@ float4 ascii(PS_INPUT input) : SV_Target {
     const float adj = 255.0 * rcp(256.0);
 
     float4 tex = mosaic.Load(int3(input.pos.xy, 0));
-    float4 col = lerp(float4(tex.rgb, 1.0), unpremul_col(tex), step(1.0, alpha));
+    float4 col = lerp(float4(tex.rgb, 1.0), unpremul_col(tex), step(0.5, alpha));
     float4 lin_col = to_linear(col, col_space);
     float luma = saturate(calc_luma(lin_col.rgb, luma_mode) * luma_gain);
     float mask = step(luma_range.x, luma) * step(luma, luma_range.y);
