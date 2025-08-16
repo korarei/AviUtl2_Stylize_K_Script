@@ -229,12 +229,12 @@ obj.pixelshader("thresholding_rgba", "object", "object", {
 --label:${LABEL}
 --track0:Level,1,256,8,1
 --check@_1:Value Only,0
---track@_2:Size,1,2000,1,1
---check@_5:Sharp Colors,0
 --check0:Multi Channel Mode,0
 --track1:R Level,1,256,8,1
 --track2:G Level,1,256,8,1
 --track3:B Level,1,256,8,1
+--track@_2:Size,1,2000,1,1
+--check@_5:Sharp Colors,0
 --select@_3:Color Space=1,Linear=0,sRGB=1
 --track@_4:Mix,0,100,100,0.01
 --value@_0:PI,{}
@@ -255,13 +255,6 @@ if (type(_0.use_v) == "boolean") then
 elseif (type(_0.use_v) == "number") then
     use_v = _0.use_v ~= 0 and 1 or 0
 end
-local size = math.max(math.floor(tonumber(_0.size) or _2), 1) _2 = nil
-local sharp_col = _5 _5 = nil
-if (type(_0.sharp_col) == "boolean") then
-    sharp_col = _0.sharp_col and 1 or 0
-elseif (type(_0.sharp_col) == "number") then
-    sharp_col = _0.sharp_col ~= 0 and 1 or 0
-end
 local multi_channel_mode = obj.check0 and 1 or 0
 if (type(_0.multi_channel_mode) == "boolean") then
     multi_channel_mode = _0.multi_channel_mode and 1 or 0
@@ -271,6 +264,13 @@ end
 local r_level = clamp(tonumber(_0.r_level) or obj.track1, 1, 256)
 local g_level = clamp(tonumber(_0.g_level) or obj.track2, 1, 256)
 local b_level = clamp(tonumber(_0.b_level) or obj.track3, 1, 256)
+local size = math.max(math.floor(tonumber(_0.size) or _2), 1) _2 = nil
+local sharp_col = _5 _5 = nil
+if (type(_0.sharp_col) == "boolean") then
+    sharp_col = _0.sharp_col and 1 or 0
+elseif (type(_0.sharp_col) == "number") then
+    sharp_col = _0.sharp_col ~= 0 and 1 or 0
+end
 local col_space = tonumber(_0.col_space) or _3 _3 = nil
 local mix = clamp(tonumber(_0.mix) or _4, 0.0, 100.0) * 0.01 _4 = nil
 _0 = nil
@@ -314,7 +314,7 @@ obj.pixelshader("posterize", "object", "object", {
 --select@_13:Blend Mode,Normal=0,Add=1,Subtract=2,Multiply=3,Screen=4,Overlay=5,Lighten=6,Darken=7,Luminosity=8,Chroma=9,Linear Burn=10,Linear Light=11,Difference=12
 --track@_14:Mix,0,100,100,0.01
 --check@_15:Shuffle Glyphs,0
---value@_16:Exclude Glyphs,""
+--value@_16:Excluded Glyphs,""
 --track@_17:Interval,0,100,0,1
 --track@_18:Seed,-1000,1000,-1,1
 --value@_0:PI,{}
@@ -363,7 +363,7 @@ if (type(_0.shuf_glyphs) == "boolean") then
 elseif (type(_0.shuf_glyphs) == "number") then
     shuf_glyphs = _0.inv_luma ~= 0
 end
-local exclude_str = _0.exclude and tonumber(_0.exclude) or _16 _16 = nil
+local exclude_str = _0.excluded_glyphs and tonumber(_0.excluded_glyphs) or _16 _16 = nil
 local interval = math.max(tonumber(_0.interval) or _17, 0) _17 = nil
 local seed = tonumber(_0.seed) or _18 _18 = nil
 _0 = nil
