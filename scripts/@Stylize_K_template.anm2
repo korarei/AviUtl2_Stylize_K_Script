@@ -796,7 +796,11 @@ else
             local x = a.x + d.x * m
             for n = 0, count.y do
                 local y = a.y + d.y * n
-                obj.draw(x, y, z)
+
+                local ox = x + o.x * n
+                local oy = y + o.y * m
+
+                obj.draw(ox, oy, z)
             end
         end
     end
