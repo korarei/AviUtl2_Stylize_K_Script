@@ -813,6 +813,7 @@ end
 --track0:Count,1,1000,3,1
 --track@_1:Offset,-1000,1000,0,1
 --select@_2:Composite,Below=0,Above=1
+--check0:Sync with Output Effect,1
 --track1:X,-100000,100000,100,0.01
 --track2:Y,-100000,100000,0,0.01
 --track3:Z,-100000,100000,0,0.01
@@ -828,6 +829,12 @@ _0 = _0 or {}
 local count = math.max(math.floor(tonumber(_0.count) or obj.track0), 1)
 local offset = math.floor(tonumber(_0.offset) or _1) _1 = nil
 local composite = tonumber(_0.composite) or _2 _2 = nil
+local sync = obj.check0
+if (type(_0.sync) == "boolean") then
+    sync = _0.sync
+elseif (type(_0.sync) == "number") then
+    sync = _0.sync ~= 0
+end
 local x = tonumber(_0.x) or obj.track1
 local y = tonumber(_0.y) or obj.track2
 local z = tonumber(_0.z) or obj.track3
@@ -844,6 +851,19 @@ local last_idx = count - 1
 local st, ed, step = 0, last_idx, 1
 if (composite == 0) then
     st, ed, step = ed, st, -1
+end
+
+if (sync) then
+    local s = obj.zoom * obj.getvalue("zoom") * 0.01
+    local a, oa = obj.getvalue("aspect"), obj.aspect
+    local a_abs, oa_abs = math.abs(a), math.abs(oa)
+
+    local ax = (1 - (a + a_abs) * 0.5) * (1 - (oa + oa_abs) * 0.5)
+    local ay = (1 + (a - a_abs) * 0.5) * (1 + (oa - oa_abs) * 0.5)
+
+    x = x * s * ax
+    y = y * s * ay
+    z = z * s
 end
 
 obj.effect()
