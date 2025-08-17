@@ -806,7 +806,7 @@ end
 @Repeat
 --infomation:Repeat${SCRIPT_NAME} ${VERSION}
 --label:${LABEL}
---track0:Copies,1,1000,3,1
+--track0:Count,1,1000,3,1
 --track@_1:Offset,-1000,1000,0,1
 --select@_2:Composite,Below=0,Above=1
 --track1:X,-100000,100000,100,0.01
@@ -821,7 +821,7 @@ end
 --value@_0:PI,{}
 
 _0 = _0 or {}
-local copies = math.max(math.floor(tonumber(_0.copies) or obj.track0), 1)
+local count = math.max(math.floor(tonumber(_0.count) or obj.track0), 1)
 local offset = math.floor(tonumber(_0.offset) or _1) _1 = nil
 local composite = tonumber(_0.composite) or _2 _2 = nil
 local x = tonumber(_0.x) or obj.track1
@@ -836,7 +836,7 @@ local a_ed = math.max(tonumber(_0.ed_alpha) or _8, 0.0) * 0.01 _8 = nil
 _0 = nil
 
 local a_grad = a_ed - a_st
-local last_idx = copies - 1
+local last_idx = count - 1
 local st, ed, step = 0, last_idx, 1
 if (composite == 0) then
     st, ed, step = ed, st, -1
@@ -861,7 +861,7 @@ end
 --track@_2:Map Hue,-3600,3600,0,0.01
 --track1:Map Slice,0,100,50,0.01
 --track2:Map Scale,0,1000,100,0.01
---track3:Map Shift,-500,500,0,0.01
+--track3:Map Shift,-1000,1000,0,0.01
 --select@_3:Map Edges,Clamp=0,Repeat=1,Mirror=2
 --check@_4:Invert Luma,0
 --select@_5:Luma Mode=1,BT.601=0,BT.709=1,BT.2020=2
