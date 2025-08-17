@@ -11,6 +11,7 @@
         "SHADER_THRESHOLD": "shaders/threshold.hlsl",
         "SHADER_THRESHOLD_RGBA": "shaders/threshold_rgba.hlsl",
         "SHADER_POSTERIZE": "shaders/posterize.hlsl",
+        "SHADER_POSTERIZE_RGBA": "shaders/posterize_rgba.hlsl",
         "SHADER_ASCII": "shaders/ascii.hlsl",
         "SHADER_MOTION_TILE": "shaders/motion_tile.hlsl",
         "SHADER_GRADIENT_MAP": "shaders/gradient_map.hlsl",

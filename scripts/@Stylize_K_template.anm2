@@ -228,11 +228,7 @@ obj.pixelshader("thresholding_rgba", "object", "object", {
 --infomation:Posterize${SCRIPT_NAME} ${VERSION}
 --label:${LABEL}
 --track0:Level,1,256,8,1
---check@_1:Value Only,0
---check0:Multi Channel Mode,0
---track1:R Level,1,256,8,1
---track2:G Level,1,256,8,1
---track3:B Level,1,256,8,1
+--select@_1:Channel,RGB=0,RGBA=1,Value=2,Value A=3
 --track@_2:Size,1,2000,1,1
 --check@_5:Sharp Colors,0
 --select@_3:Color Space=1,Linear=0,sRGB=1
@@ -249,21 +245,7 @@ end
 
 _0 = _0 or {}
 local level = clamp(math.floor(tonumber(_0.level) or obj.track0), 1, 256)
-local use_v = _1 _1 = nil
-if (type(_0.use_v) == "boolean") then
-    use_v = _0.use_v and 1 or 0
-elseif (type(_0.use_v) == "number") then
-    use_v = _0.use_v ~= 0 and 1 or 0
-end
-local multi_channel_mode = obj.check0 and 1 or 0
-if (type(_0.multi_channel_mode) == "boolean") then
-    multi_channel_mode = _0.multi_channel_mode and 1 or 0
-elseif (type(_0.multi_channel_mode) == "number") then
-    multi_channel_mode = _0.multi_channel_mode ~= 0 and 1 or 0
-end
-local r_level = clamp(tonumber(_0.r_level) or obj.track1, 1, 256)
-local g_level = clamp(tonumber(_0.g_level) or obj.track2, 1, 256)
-local b_level = clamp(tonumber(_0.b_level) or obj.track3, 1, 256)
+local channel = tonumber(_0.channel) or _1 _1 = nil
 local size = math.max(math.floor(tonumber(_0.size) or _2), 1) _2 = nil
 local sharp_col = _5 _5 = nil
 if (type(_0.sharp_col) == "boolean") then
@@ -282,10 +264,66 @@ if (size > 1) then
 end
 
 obj.pixelshader("posterize", "object", "object", {
-    multi_channel_mode,
-    r_level, g_level, b_level,
     level,
-    use_v,
+    channel,
+    col_space,
+    mix
+})
+
+
+@Posterize(RGBA)
+--infomation:Posterize(RGBA)${SCRIPT_NAME} ${VERSION}
+--label:${LABEL}
+--track0:R Level,1,256,8,1
+--track1:G Level,1,256,8,1
+--track2:B Level,1,256,8,1
+--track3:A Level,1,256,8,1
+--check0:Disable A Level,0
+--track@_1:Size,1,2000,1,1
+--check@_2:Sharp Colors,0
+--select@_3:Color Space=1,Linear=0,sRGB=1
+--track@_4:Mix,0,100,100,0.01
+--value@_0:PI,{}
+--[[pixelshader@posterize_rgba:
+${SHADER_UTILS}
+${SHADER_POSTERIZE_RGBA}
+]]
+
+local function clamp(v, min, max)
+    return math.max(math.min(v, max), min)
+end
+
+_0 = _0 or {}
+local r_level = clamp(math.floor(tonumber(_0.r_level) or obj.track0), 1, 256)
+local g_level = clamp(math.floor(tonumber(_0.g_level) or obj.track1), 1, 256)
+local b_level = clamp(math.floor(tonumber(_0.b_level) or obj.track2), 1, 256)
+local a_level = clamp(math.floor(tonumber(_0.a_level) or obj.track3), 1, 256)
+local disable_a = obj.check0 and 1 or 0
+if (type(_0.disable_a) == "boolean") then
+    disable_a = _0.disable_a and 1 or 0
+elseif (type(_0.disable_a) == "number") then
+    disable_a = disable_a ~= 0 and 1 or 0
+end
+local size = math.max(math.floor(tonumber(_0.size) or _1), 1) _1 = nil
+local sharp_col = _2 _2 = nil
+if (type(_0.sharp_col) == "boolean") then
+    sharp_col = _0.sharp_col and 1 or 0
+elseif (type(_0.sharp_col) == "number") then
+    sharp_col = _0.sharp_col ~= 0 and 1 or 0
+end
+local col_space = tonumber(_0.col_space) or _3 _3 = nil
+local mix = clamp(tonumber(_0.mix) or _4, 0.0, 100.0) * 0.01 _4 = nil
+_0 = nil
+
+if (size > 1) then
+    local w, h = obj.getpixel()
+    local mosaic_params = string.format("bx = %d, by = %d, sharp_col = %d", w / size, h / size, sharp_col)
+    obj.effect("Mosaic@Stylize_K", "PI", mosaic_params)
+end
+
+obj.pixelshader("posterize_rgba", "object", "object", {
+    r_level, g_level, b_level, a_level,
+    disable_a,
     col_space,
     mix
 })
