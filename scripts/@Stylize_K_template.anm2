@@ -671,22 +671,22 @@ end
 --track0:X Count,1,100,3,1
 --track1:Y Count,1,100,3,1
 --track@_1:Z Count,1,100,1,1
---track2:X Gap,0,1000,100,0.01
---track3:Y Gap,0,1000,100,0.01
---track@_2:Z Gap,0,1000,100,0.01
+--track2:X Gap,-1000,1000,100,0.01
+--track3:Y Gap,-1000,1000,100,0.01
+--track@_2:Z Gap,-1000,1000,100,0.01
 --track@_4:X Offset,-1000,1000,0,0.01
 --track@_5:Y Offset,-1000,1000,0,0.01
---check@_6:Mirror Copies,1
+--check@_6:Center Align,1
 --check0:Use Group Pivot,1
 --value@_3:Z Size,math.max(obj.getpixel())
 --value@_0:PI,{}
 
 _0 = _0 or {}
-local mirror_copies = _6 ~= 0 _6 = nil
-if (type(_0.mirror_copies) == "boolean") then
-    mirror_copies = _0.mirror_copies
-elseif (type(_0.mirror_copies) == "number") then
-    mirror_copies = _0.mirror_copies ~= 0
+local c_align = _6 ~= 0 _6 = nil
+if (type(_0.center_align) == "boolean") then
+    c_align = _0.center_align
+elseif (type(_0.center_align) == "number") then
+    c_align = _0.center_align ~= 0
 end
 local use_group_pivot = obj.check0
 if (type(_0.use_group_pivot) == "boolean") then
@@ -703,9 +703,9 @@ local count = {
 _1 = nil
 
 local gap = {
-    x = math.max(tonumber(_0.x_gap) or obj.track2, 0.0) * 0.01,
-    y = math.max(tonumber(_0.y_gap) or obj.track3, 0.0) * 0.01,
-    z = math.max(tonumber(_0.z_gap) or _2, 0.0) * 0.01
+    x = tonumber(_0.x_gap) or obj.track2 * 0.01,
+    y = tonumber(_0.y_gap) or obj.track3 * 0.01,
+    z = tonumber(_0.z_gap) or _2 * 0.01
 }
 _2 = nil
 
@@ -746,7 +746,7 @@ local d = {
 
 -- First Term
 local a = {x = 0.0, y = 0.0, z = 0.0}
-if (mirror_copies) then
+if (c_align) then
     a = {
         x = -0.5 * (d.x * count.x + offset.x * res.x),
         y = -0.5 * (d.y * count.y + offset.y * res.y),
