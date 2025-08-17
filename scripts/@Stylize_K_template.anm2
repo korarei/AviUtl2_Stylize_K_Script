@@ -228,7 +228,7 @@ obj.pixelshader("thresholding_rgba", "object", "object", {
 --infomation:Posterize${SCRIPT_NAME} ${VERSION}
 --label:${LABEL}
 --track0:Level,1,256,8,1
---select@_1:Channel,RGB=0,RGBA=1,V=2,VA=3
+--select@_1:Channel,RGB=0,RGBA=1,Value=2,Value A=3
 --track@_2:Size,1,2000,1,1
 --check@_5:Sharp Colors,0
 --select@_3:Color Space=1,Linear=0,sRGB=1
