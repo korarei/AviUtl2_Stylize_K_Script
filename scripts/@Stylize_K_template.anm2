@@ -842,8 +842,8 @@ local rx = tonumber(_0.rx) or _6 _6 = nil
 local ry = tonumber(_0.ry) or _7 _7 = nil
 local rz = tonumber(_0.rz) or _8 _8 = nil
 local scale = math.max(tonumber(_0.zoom) or _9, 0.0) * 0.01 _9 = nil
-local a_st = math.max(tonumber(_0.st_alpha) or _10, 0.0) * 0.01 _10 = nil
-local a_ed = math.max(tonumber(_0.ed_alpha) or _11, 0.0) * 0.01 _11 = nil
+local a_st = math.max(tonumber(_0.st_a) or _10, 0.0) * 0.01 _10 = nil
+local a_ed = math.max(tonumber(_0.ed_a) or _11, 0.0) * 0.01 _11 = nil
 _0 = nil
 
 local a_grad = a_ed - a_st
@@ -921,7 +921,7 @@ local view_map = obj.check0
 if (type(_0.view_map) == "boolean") then
     view_map = _0.view_map
 elseif (type(_0.view_map) == "number") then
-    use_rel_layer = _0.use_rel_layer ~= 0
+    view_map = _0.view_map ~= 0
 end
 local map_hue = tonumber(_0.map_hue) or _2 _2 = nil
 local map_slice = clamp(tonumber(_0.map_slice) or obj.track1, 0.0, 100.0) * 0.01
