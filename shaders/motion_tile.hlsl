@@ -16,7 +16,7 @@ struct PS_INPUT {
 };
 
 float4 tiler(float2 pos) {
-    int2 idx = (int2)floor(pos);
+    int2 idx = int2(floor(pos));
     float2 parity = float2(idx & 1);
     float2 uv = pos - idx;
     float2 coord = lerp(uv, 1.0 - uv, mirror * parity);
@@ -28,10 +28,10 @@ float4 tiler(float2 pos) {
 float4 motion_tile(PS_INPUT input) : SV_Target {
     float2 pos = input.uv * output_gain;
     pos -= 0.5 * output_gain + center;
-    pos /= max(tile_gain, 1.0e-6);
+    pos /= max(tile_gain, 1.0e-5);
     pos += 0.5;
 
-    float2 parity = float2((int2)floor(pos) & 1);
+    float2 parity = float2(int2(floor(pos)) & 1);
     float2 shift_dir = parity.yx * float2(h_shift, 1.0 - h_shift);
     pos -= shift_dir * phase;
 

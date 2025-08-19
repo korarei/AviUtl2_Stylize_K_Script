@@ -10,6 +10,6 @@ struct PS_INPUT {
 };
 
 float4 mosaic_draw(PS_INPUT input) : SV_Target {
-    int2 block_idx = int2(input.pos.xy * rcp(res * rcp(blocks)));
+    int2 block_idx = int2(input.pos.xy * blocks * rcp(res));
     return map.Load(int3(block_idx, 0));
 }
