@@ -810,40 +810,60 @@ end
 @Repeat
 --infomation:Repeat${SCRIPT_NAME} ${VERSION}
 --label:${LABEL}
---track0:Count,1,1000,3,1
+--track@count:Count,1,1000,3,1
 --track@_1:Offset,-1000,1000,0,1
 --select@_2:Composite,Below=0,Above=1
---track1:X,-100000,100000,100,0.01
---track2:Y,-100000,100000,0,0.01
---track3:Z,-100000,100000,0,0.01
---track@_3:X Rotation,-3600,3600,0,0.01
---track@_4:Y Rotation,-3600,3600,0,0.01
---track@_5:Z Rotation,-3600,3600,0,0.01
---track@_6:Zoom,0,10000,100,0.001
---track@_7:Start Alpha,0,100,100,0.01
---track@_8:End Alpha,0,100,100,0.01
+--check0:Sync with Output Effect,1
+--track@_3:X,-100000,100000,100,0.01
+--track@_4:Y,-100000,100000,0,0.01
+--track@_5:Z,-100000,100000,0,0.01
+--track@_6:X Rotation,-3600,3600,0,0.01
+--track@_7:Y Rotation,-3600,3600,0,0.01
+--track@_8:Z Rotation,-3600,3600,0,0.01
+--track@_9:Zoom,0,10000,100,0.001
+--track@_10:Start Alpha,0,100,100,0.01
+--track@_11:End Alpha,0,100,100,0.01
 --value@_0:PI,{}
 
 _0 = _0 or {}
-local count = math.max(math.floor(tonumber(_0.count) or obj.track0), 1)
+local n = math.max(math.floor(tonumber(_0.count) or count), 1) count = nil -- for user
 local offset = math.floor(tonumber(_0.offset) or _1) _1 = nil
 local composite = tonumber(_0.composite) or _2 _2 = nil
-local x = tonumber(_0.x) or obj.track1
-local y = tonumber(_0.y) or obj.track2
-local z = tonumber(_0.z) or obj.track3
-local rx = tonumber(_0.rx) or _3 _3 = nil
-local ry = tonumber(_0.ry) or _4 _4 = nil
-local rz = tonumber(_0.rz) or _5 _5 = nil
-local scale = math.max(tonumber(_0.zoom) or _6, 0.0) * 0.01 _6 = nil
-local a_st = math.max(tonumber(_0.st_alpha) or _7, 0.0) * 0.01 _7 = nil
-local a_ed = math.max(tonumber(_0.ed_alpha) or _8, 0.0) * 0.01 _8 = nil
+local sync = obj.check0
+if (type(_0.sync) == "boolean") then
+    sync = _0.sync
+elseif (type(_0.sync) == "number") then
+    sync = _0.sync ~= 0
+end
+local x = tonumber(_0.x) or _3 _3 = nil
+local y = tonumber(_0.y) or _4 _4 = nil
+local z = tonumber(_0.z) or _5 _5 = nil
+local rx = tonumber(_0.rx) or _6 _6 = nil
+local ry = tonumber(_0.ry) or _7 _7 = nil
+local rz = tonumber(_0.rz) or _8 _8 = nil
+local scale = math.max(tonumber(_0.zoom) or _9, 0.0) * 0.01 _9 = nil
+local a_st = math.max(tonumber(_0.st_alpha) or _10, 0.0) * 0.01 _10 = nil
+local a_ed = math.max(tonumber(_0.ed_alpha) or _11, 0.0) * 0.01 _11 = nil
 _0 = nil
 
 local a_grad = a_ed - a_st
-local last_idx = count - 1
+local last_idx = n - 1
 local st, ed, step = 0, last_idx, 1
 if (composite == 0) then
     st, ed, step = ed, st, -1
+end
+
+if (sync) then
+    local s = obj.zoom * obj.getvalue("zoom") * 0.01
+    local a, oa = obj.getvalue("aspect"), obj.aspect
+    local a_abs, oa_abs = math.abs(a), math.abs(oa)
+
+    local ax = (1 - (a + a_abs) * 0.5) * (1 - (oa + oa_abs) * 0.5)
+    local ay = (1 + (a - a_abs) * 0.5) * (1 + (oa - oa_abs) * 0.5)
+
+    x = x * s * ax
+    y = y * s * ay
+    z = z * s
 end
 
 obj.effect()
