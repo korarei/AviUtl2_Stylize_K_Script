@@ -365,6 +365,8 @@ RGBA個別にレベルを設定してポスタリゼーションを行う．
 
 ### ASCII
 
+![ascii_sample](/assets/ascii_sample.jpg)
+
 アスキーアート作成スクリプト．アスキーと言いながらUTF-8に対応． (絵文字は無理)
 
 - Glyphs
