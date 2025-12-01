@@ -568,7 +568,7 @@ end
 
 @MotionTile
 --information:MotionTile${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
---label:${LABEL}
+--label:${LABEL}\Tile
 --track0:X Center,-4000,4000,0,0.01
 --track1:Y Center,-4000,4000,0,0.01
 --track2:Output W,0,1000,100,0.01
@@ -667,140 +667,200 @@ end
 
 @Tile
 --information:Tile${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
---label:${LABEL}
+--label:${LABEL}\Tile
+--group:Count
 --track0:X Count,1,100,3,1
 --track1:Y Count,1,100,3,1
---track@_1:Z Count,1,100,1,1
---track2:X Gap,-1000,1000,100,0.01
---track3:Y Gap,-1000,1000,100,0.01
---track@_2:Z Gap,-1000,1000,100,0.01
---track@_4:X Offset,-1000,1000,0,0.01
---track@_5:Y Offset,-1000,1000,0,0.01
---check@_6:Center Align,1
---check0:Use Group Pivot,1
---value@_3:Z Size,math.max(obj.getpixel())
+--track2:Z Count,1,100,1,1
+--group:Padding
+--select@s0:Padding Mode,Relative=0,Absolute=1,Endpoint=2
+--track3:X Padding,-100000,100000,0,0.01
+--track4:Y Padding,-100000,100000,0,0.01
+--track5:Z Padding,-100000,100000,0,0.01
+--group:Offset,false
+--select@s1:Offset Mode,Relative=0,Absolute=1,Endpoint=2
+--track6:X Offset,-100000,100000,0,0.01
+--track7:Y Offset,-100000,100000,0,0.01
+--track8:Z Offset,-100000,100000,0,0.01
+--group:Alignment,false
+--select@s4:X Axis=1,Minimum=0,Center=1,Maximum=2
+--select@s5:Y Axis=1,Minimum=0,Center=1,Maximum=2
+--select@s6:Z Axis=1,Minimum=0,Center=1,Maximum=2
+--group:Additional Options,false
+--select@s7:Owner=1,World Space=0,Local Space=1
 --value@_0:PI,{}
 
 _0 = _0 or {}
-local c_align = _6 ~= 0 _6 = nil
-if (type(_0.center_align) == "boolean") then
-    c_align = _0.center_align
-elseif (type(_0.center_align) == "number") then
-    c_align = _0.center_align ~= 0
-end
-local use_group_pivot = obj.check0
-if (type(_0.use_group_pivot) == "boolean") then
-    use_group_pivot = _0.use_group_pivot
-elseif (type(_0.use_group_pivot) == "number") then
-    use_group_pivot = _0.use_group_pivot ~= 0
-end
-
 local count = {
-    x = math.max(math.floor(tonumber(_0.x_count) or obj.track0), 1) - 1,
-    y = math.max(math.floor(tonumber(_0.y_count) or obj.track1), 1) - 1,
-    z = math.max(math.floor(tonumber(_0.z_count) or _1), 1) - 1
+    x = obj.track0 - 1,
+    y = obj.track1 - 1,
+    z = obj.track2 - 1
 }
-_1 = nil
 
-local gap = {
-    x = tonumber(_0.x_gap) or obj.track2 * 0.01,
-    y = tonumber(_0.y_gap) or obj.track3 * 0.01,
-    z = tonumber(_0.z_gap) or _2 * 0.01
+if (type(_0.count) == "table") then
+    count.x = (tonumber(_0.count.x) or obj.track0) - 1
+    count.y = (tonumber(_0.count.y) or obj.track1) - 1
+    count.z = (tonumber(_0.count.z) or obj.track2) - 1
+end
+
+local padding = {
+    mode = s0,
+    x = obj.track3,
+    y = obj.track4,
+    z = obj.track5
 }
-_2 = nil
+
+if (type(_0.padding) == "table") then
+    padding.mode = tonumber(_0.padding.mode) or s0
+    padding.x = tonumber(_0.padding.x) or obj.track3
+    padding.y = tonumber(_0.padding.y) or obj.track4
+    padding.z = tonumber(_0.padding.z) or obj.track5
+end
+s0 = nil
 
 local offset = {
-    x = (tonumber(_0.x_offset) or _4) * 0.01,
-    y = (tonumber(_0.y_offset) or _5) * 0.01
-}
-_4 = nil
-_5 = nil
-
-local w, h = obj.getpixel()
-local res = {
-    x = w,
-    y = h,
-    z = math.max(tonumber(_3) or math.max(w, h), 0.0)
-}
-_3 = nil
-_0 = nil
-
-local half_res = {
-    x = res.x * 0.5,
-    y = res.y * 0.5
+    mode = s1,
+    x = obj.track6,
+    y = obj.track7,
+    z = obj.track8
 }
 
--- Arithmetic Progression
--- Offset
-local o = {
-    x = offset.x * res.x / count.y,
-    y = offset.y * res.y / count.x
+if (type(_0.offset) == "table") then
+    offset.mode = tonumber(_0.offset.mode) or s1
+    offset.x = tonumber(_0.offset.x) or obj.track6
+    offset.y = tonumber(_0.offset.y) or obj.track7
+    offset.z = tonumber(_0.offset.z) or obj.track8
+end
+s1 = nil
+
+local align = {
+    x = s4,
+    y = s5,
+    z = s6
 }
 
--- Common Difference
-local d = {
-    x = res.x * gap.x,
-    y = res.y * gap.y,
-    z = res.z * gap.z
+if (type(_0.alignment) == "table") then
+    align.x = tonumber(_0.alignment.x) or s4
+    align.y = tonumber(_0.alignment.y) or s5
+    align.z = tonumber(_0.alignment.z) or s6
+end
+s4 = nil
+s5 = nil
+s6 = nil
+
+local size = {
+    x = obj.w,
+    y = obj.h,
+    z = 0.0
 }
 
--- First Term
-local a = {x = 0.0, y = 0.0, z = 0.0}
-if (c_align) then
-    a = {
-        x = -0.5 * (d.x * count.x + offset.x * res.x),
-        y = -0.5 * (d.y * count.y + offset.y * res.y),
-        z = -0.5 * d.z * count.z
-    }
+if (type(_0.size) == "table") then
+    size.x = tonumber(_0.size.x) or obj.w
+    size.y = tonumber(_0.size.y) or obj.h
+    size.z = tonumber(_0.size.z) or 0.0
 end
 
+local owner = tonumber(_0.owner_space) or s7 s7 = nil
+_0 = nil
+
+if (owner == 0) then
+    size.x = size.x * obj.getvalue("sx") * obj.sx
+    size.y = size.y * obj.getvalue("sy") * obj.sy
+    size.z = size.z * obj.getvalue("sz") * obj.sz
+end
+
+local o = {}
+if (offset.mode == 0) then
+    o.x = size.x * (offset.x * 0.01)
+    o.y = size.y * (offset.y * 0.01)
+    o.z = size.z * (offset.z * 0.01)
+elseif (offset.mode == 2) then
+    o.x = offset.x / math.max(count.x, 1.0)
+    o.y = offset.y / math.max(count.y, 1.0)
+    o.z = offset.z / math.max(count.z, 1.0)
+else
+    o.x = offset.x
+    o.y = offset.y
+    o.z = offset.z
+end
+
+local d = {}
+if (padding.mode == 0) then
+    d.x = size.x * (1.0 + padding.x * 0.01)
+    d.y = size.y * (1.0 + padding.y * 0.01)
+    d.z = size.z * (1.0 + padding.z * 0.01)
+elseif (padding.mode == 2) then
+    d.x = (padding.x - size.x) / math.max(count.x, 1.0)
+    d.y = (padding.y - size.y) / math.max(count.y, 1.0)
+    d.z = (padding.z - size.z) / math.max(count.z, 1.0)
+else
+    d.x = size.x + padding.x
+    d.y = size.y + padding.y
+    d.z = size.z + padding.z
+end
+
+local a = {
+    x = -align.x * (0.5 * d.x * count.x + o.x),
+    y = -align.y * (0.5 * d.y * count.y + o.y),
+    z = -align.z * (0.5 * d.z * count.z + o.z)
+}
+
 obj.effect()
-if (use_group_pivot) then
+if (owner == 1) then
     local polys = {}
-    local idx = 1
-    for l = 0, count.z do
-        local z = a.z + d.z * l
-        for m = 0, count.x do
-            local x = a.x + d.x * m
-            for n = 0, count.y do
-                local y = a.y + d.y * n
+    local pivot = {
+        x = obj.w * 0.5,
+        y = obj.h * 0.5
+    }
 
-                local ox = x + o.x * n
-                local oy = y + o.y * m
+    for k = 0, count.z do
+        local z = a.z + d.z * k
 
-                local left = ox - half_res.x
-                local right = ox + half_res.x
-                local top = oy - half_res.y
-                local bottom = oy + half_res.y
-                polys[idx] = {
-                    left,  top,    z,
-                    right, top,    z,
-                    right, bottom, z,
-                    left,  bottom, z,
+        for i = 0, count.x do
+            local x = a.x + d.x * i
+
+            for j = 0, count.y do
+                local y = a.y + d.y * j
+
+                local ox = x + o.x * (j + k)
+                local oy = y + o.y * (k + i)
+                local oz = z + o.z * (i + j)
+
+                local l = ox - pivot.x
+                local r = ox + pivot.x
+                local t = oy - pivot.y
+                local b = oy + pivot.y
+
+                table.insert(polys, {
+                    l, t, oz,
+                    r, t, oz,
+                    r, b, oz,
+                    l, b, oz,
                     0,     0,
-                    res.x, 0,
-                    res.x, res.y,
-                    0,     res.y
-                }
-
-                idx = idx + 1
+                    obj.w, 0,
+                    obj.w, obj.h,
+                    0,     obj.h
+                })
             end
         end
     end
 
     obj.drawpoly(polys)
 else
-    for l = 0, count.z do
-        local z = a.z + d.z * l
-        for m = 0, count.x do
-            local x = a.x + d.x * m
-            for n = 0, count.y do
-                local y = a.y + d.y * n
+    for k = 0, count.z do
+        local z = a.z + d.z * k
 
-                local ox = x + o.x * n
-                local oy = y + o.y * m
+        for i = 0, count.x do
+            local x = a.x + d.x * i
 
-                obj.draw(ox, oy, z)
+            for j = 0, count.y do
+                local y = a.y + d.y * j
+
+                local ox = x + o.x * (j + k)
+                local oy = y + o.y * (k + i)
+                local oz = z + o.z * (i + j)
+
+                obj.draw(ox, oy, oz)
             end
         end
     end
@@ -809,7 +869,7 @@ end
 
 @Repeat
 --information:Repeat${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
---label:${LABEL}
+--label:${LABEL}\Tile
 --track@count:Count,1,1000,3,1
 --track@_1:Offset,-1000,1000,0,1
 --select@_2:Composite,Below=0,Above=1
