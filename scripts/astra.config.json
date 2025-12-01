@@ -1,0 +1,46 @@
+{
+    "project": {
+        "name": "@Stylize_K",
+        "author": "Korarei"
+    },
+    "build": {
+        "directory": "build",
+        "scripts": [
+            {
+                "suffix": ".anm2",
+                "source": {
+                    "variables": {
+                        "LABEL": "Stylize"
+                    }
+                }
+            }
+        ]
+    },
+    "install": {
+        "directory": "C:/ProgramData/aviutl2/Script"
+    },
+    "release": {
+        "directory": "release",
+        "archive": {
+            "files": [
+                "../README.md",
+                "../LICENSE"
+            ],
+            "assets": [
+                {
+                    "directory": "assets",
+                    "url": "https://drive.usercontent.google.com/u/0/uc?id=1hk6XHRxzFkjobc1wOHtsPDyAwKjvkWHB&export=download",
+                    "texts": [
+                        {
+                            "file": "credits.txt",
+                            "content": "グラデーション画像提供者: ゼットデジタ 様"
+                        }
+                    ]
+                }
+            ]
+        },
+        "notes": {
+            "source": "../README.md"
+        }
+    }
+}

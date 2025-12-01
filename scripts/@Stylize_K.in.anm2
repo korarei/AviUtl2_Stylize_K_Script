@@ -1,5 +1,5 @@
 @Saturate
---infomation:Saturate${SCRIPT_NAME} ${VERSION}
+--information:Saturate${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:R Gain,0,1000,100,0.01
 --track1:G Gain,0,1000,100,0.01
@@ -9,8 +9,8 @@
 --track@_2:Mix,0,100,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@saturate:
-${SHADER_UTILS}
-${SHADER_SATURATE}
+--#include "shaders/utils.hlsl"
+--#include "shaders/saturate.hlsl"
 ]]
 
 _0 = _0 or {}
@@ -30,20 +30,20 @@ obj.pixelshader("saturate", "object", "object", {
 
 
 @Mosaic
---infomation:Mosaic${SCRIPT_NAME} ${VERSION}
+--information:Mosaic${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:X Blocks,1,16384,32,1
 --track1:Y Blocks,1,16384,32,1
 --check0:Sharp Colors,0
 --value@_0:PI,{}
 --[[computeshader@mosaic_ave:
-${SHADER_MOSAIC_AVE}
+--#include "shaders/mosaic_ave.hlsl"
 ]]
 --[[pixelshader@mosaic_draw:
-${SHADER_MOSAIC_DRAW}
+--#include "shaders/mosaic_draw.hlsl"
 ]]
 --[[pixelshader@mosaic_point:
-${SHADER_MOSAIC_POINT}
+--#include "shaders/mosaic_point.hlsl"
 ]]
 
 _0 = _0 or {}
@@ -101,7 +101,7 @@ end
 
 
 @Threshold
---infomation:Threshold${SCRIPT_NAME} ${VERSION}
+--information:Threshold${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:Threshold,0,255,128
 --select@_1:Channel=1,Luminance (BT.601)=0,Luminance (BT.709)=1,Luminance (BT.2020)=2,Value=3,Saturation=4,Hue=5,Alpha=6
@@ -114,8 +114,8 @@ end
 --track1:Mix,0,100,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@thresholding:
-${SHADER_UTILS}
-${SHADER_THRESHOLD}
+--#include "shaders/utils.hlsl"
+--#include "shaders/threshold.hlsl"
 ]]
 
 local function clamp(v, min, max)
@@ -153,7 +153,7 @@ obj.pixelshader("thresholding", "object", "object", {
 
 
 @Threshold(RGBA)
---infomation:Threshold(RGBA)${SCRIPT_NAME} ${VERSION}
+--information:Threshold(RGBA)${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:R Threshold,0,255,128
 --track1:G Threshold,0,255,128
@@ -168,8 +168,8 @@ obj.pixelshader("thresholding", "object", "object", {
 --track@_6:Mix,0,100,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@thresholding_rgba:
-${SHADER_UTILS}
-${SHADER_THRESHOLD_RGBA}
+--#include "shaders/utils.hlsl"
+--#include "shaders/threshold_rgba.hlsl"
 ]]
 
 local function clamp(v, min, max)
@@ -225,7 +225,7 @@ obj.pixelshader("thresholding_rgba", "object", "object", {
 
 
 @Posterize
---infomation:Posterize${SCRIPT_NAME} ${VERSION}
+--information:Posterize${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:Level,1,256,8,1
 --select@_1:Channel,RGB=0,RGBA=1,Value=2,Value A=3
@@ -235,8 +235,8 @@ obj.pixelshader("thresholding_rgba", "object", "object", {
 --track@_4:Mix,0,100,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@posterize:
-${SHADER_UTILS}
-${SHADER_POSTERIZE}
+--#include "shaders/utils.hlsl"
+--#include "shaders/posterize.hlsl"
 ]]
 
 local function clamp(v, min, max)
@@ -272,7 +272,7 @@ obj.pixelshader("posterize", "object", "object", {
 
 
 @Posterize(RGBA)
---infomation:Posterize(RGBA)${SCRIPT_NAME} ${VERSION}
+--information:Posterize(RGBA)${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:R Level,1,256,8,1
 --track1:G Level,1,256,8,1
@@ -285,8 +285,8 @@ obj.pixelshader("posterize", "object", "object", {
 --track@_4:Mix,0,100,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@posterize_rgba:
-${SHADER_UTILS}
-${SHADER_POSTERIZE_RGBA}
+--#include "shaders/utils.hlsl"
+--#include "shaders/posterize_rgba.hlsl"
 ]]
 
 local function clamp(v, min, max)
@@ -330,7 +330,7 @@ obj.pixelshader("posterize_rgba", "object", "object", {
 
 
 @ASCII
---infomation:ASCII${SCRIPT_NAME} ${VERSION}
+--information:ASCII${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --value@_1:Glyphs,"@#%*+=-:. "
 --font@_2:Font,Yu Gothic UI
@@ -357,8 +357,8 @@ obj.pixelshader("posterize_rgba", "object", "object", {
 --track@_18:Seed,-1000,1000,-1,1
 --value@_0:PI,{}
 --[[pixelshader@ascii:
-${SHADER_UTILS}
-${SHADER_ASCII}
+--#include "shaders/utils.hlsl"
+--#include "shaders/ascii.hlsl"
 ]]
 
 local function clamp(v, min, max)
@@ -567,7 +567,7 @@ end
 
 
 @MotionTile
---infomation:MotionTile${SCRIPT_NAME} ${VERSION}
+--information:MotionTile${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:X Center,-4000,4000,0,0.01
 --track1:Y Center,-4000,4000,0,0.01
@@ -581,7 +581,7 @@ end
 --check0:Horizontal Shift,0
 --value@_0:PI,{}
 --[[pixelshader@motion_tile:
-${SHADER_MOTION_TILE}
+--#include "shaders/motion_tile.hlsl"
 ]]
 
 obj.setanchor("track", 0, "line")
@@ -666,7 +666,7 @@ end
 
 
 @Tile
---infomation:Tile${SCRIPT_NAME} ${VERSION}
+--information:Tile${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:X Count,1,100,3,1
 --track1:Y Count,1,100,3,1
@@ -808,7 +808,7 @@ end
 
 
 @Repeat
---infomation:Repeat${SCRIPT_NAME} ${VERSION}
+--information:Repeat${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track@count:Count,1,1000,3,1
 --track@_1:Offset,-1000,1000,0,1
@@ -876,7 +876,7 @@ end
 
 
 @GradientMap
---infomation:GradientMap${SCRIPT_NAME} ${VERSION}
+--information:GradientMap${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --file@_1:Map File
 --track0:Map Layer,-256,256,0,1
@@ -894,14 +894,14 @@ end
 --track@_8:Mix,0,100,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@gradient_map:
-${SHADER_UTILS}
-${SHADER_MAP_UTILS}
-${SHADER_GRADIENT_MAP}
+--#include "shaders/utils.hlsl"
+--#include "shaders/map_utils.hlsl"
+--#include "shaders/gradient_map.hlsl"
 ]]
 --[[pixelshader@map_viewer:
-${SHADER_UTILS}
-${SHADER_MAP_UTILS}
-${SHADER_MAP_VIEWER}
+--#include "shaders/utils.hlsl"
+--#include "shaders/map_utils.hlsl"
+--#include "shaders/map_viewer.hlsl"
 ]]
 
 local function clamp(v, min, max)
@@ -1021,12 +1021,12 @@ end
 
 
 @Unpremultiply
---infomation:Unpremultiply${SCRIPT_NAME} ${VERSION}
+--information:Unpremultiply${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:Gain,0,1000,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@unpremult:
-${SHADER_UNPREMULT}
+--#include "shaders/unpremult.hlsl"
 ]]
 
 _0 = _0 or {}
