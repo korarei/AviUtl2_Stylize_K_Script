@@ -669,11 +669,11 @@ end
 --information:Tile${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}\Tile
 --group:Count
---track0:X Count,1,100,3,1
---track1:Y Count,1,100,3,1
---track2:Z Count,1,100,1,1
+--track0:X Count,1,1000,3,1
+--track1:Y Count,1,1000,3,1
+--track2:Z Count,1,1000,1,1
 --group:Padding
---select@s0:Padding Mode,Relative=0,Absolute=1,Endpoint=2
+--select@s0:Padding Mode,Relative=0,Absolute=1,Bounds=2
 --track3:X Padding,-100000,100000,0,0.01
 --track4:Y Padding,-100000,100000,0,0.01
 --track5:Z Padding,-100000,100000,0,0.01
@@ -687,7 +687,7 @@ end
 --select@s5:Y Axis=1,Minimum=0,Center=1,Maximum=2
 --select@s6:Z Axis=1,Minimum=0,Center=1,Maximum=2
 --group:Additional Options,false
---select@s7:Owner=1,World Space=0,Local Space=1
+--select@s7:Coord Space=1,World=0,Local=1
 --value@_0:PI,{}
 
 _0 = _0 or {}
@@ -760,10 +760,10 @@ if (type(_0.size) == "table") then
     size.z = tonumber(_0.size.z) or 0.0
 end
 
-local owner = tonumber(_0.owner_space) or s7 s7 = nil
+local space = tonumber(_0.coord_space) or s7 s7 = nil
 _0 = nil
 
-if (owner == 0) then
+if (space == 0) then
     size.x = size.x * obj.getvalue("sx") * obj.sx
     size.y = size.y * obj.getvalue("sy") * obj.sy
     size.z = size.z * obj.getvalue("sz") * obj.sz
@@ -806,7 +806,7 @@ local a = {
 }
 
 obj.effect()
-if (owner == 1) then
+if (space == 1) then
     local polys = {}
     local pivot = {
         x = obj.w * 0.5,
