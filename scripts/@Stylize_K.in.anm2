@@ -769,21 +769,6 @@ if (space == 0) then
     size.z = size.z * obj.getvalue("sz") * obj.sz
 end
 
-local o = {}
-if (offset.mode == 0) then
-    o.x = size.x * (offset.x * 0.01)
-    o.y = size.y * (offset.y * 0.01)
-    o.z = size.z * (offset.z * 0.01)
-elseif (offset.mode == 2) then
-    o.x = offset.x / math.max(count.x, 1.0)
-    o.y = offset.y / math.max(count.y, 1.0)
-    o.z = offset.z / math.max(count.z, 1.0)
-else
-    o.x = offset.x
-    o.y = offset.y
-    o.z = offset.z
-end
-
 local d = {}
 if (padding.mode == 0) then
     d.x = size.x * (1.0 + padding.x * 0.01)
@@ -797,6 +782,21 @@ else
     d.x = size.x + padding.x
     d.y = size.y + padding.y
     d.z = size.z + padding.z
+end
+
+local o = {}
+if (offset.mode == 0) then
+    o.x = size.x * (offset.x * 0.01)
+    o.y = size.y * (offset.y * 0.01)
+    o.z = size.z * (offset.z * 0.01)
+elseif (offset.mode == 2) then
+    o.x = offset.x / math.max(count.y + count.z, 1.0)
+    o.y = offset.y / math.max(count.z + count.x, 1.0)
+    o.z = offset.z / math.max(count.x + count.y, 1.0)
+else
+    o.x = offset.x
+    o.y = offset.y
+    o.z = offset.z
 end
 
 local a = {
