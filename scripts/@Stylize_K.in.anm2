@@ -1,5 +1,5 @@
 @Saturate
---infomation:Saturate${SCRIPT_NAME} ${VERSION}
+--information:Saturate${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:R Gain,0,1000,100,0.01
 --track1:G Gain,0,1000,100,0.01
@@ -9,8 +9,8 @@
 --track@_2:Mix,0,100,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@saturate:
-${SHADER_UTILS}
-${SHADER_SATURATE}
+--#include "shaders/utils.hlsl"
+--#include "shaders/saturate.hlsl"
 ]]
 
 _0 = _0 or {}
@@ -30,20 +30,20 @@ obj.pixelshader("saturate", "object", "object", {
 
 
 @Mosaic
---infomation:Mosaic${SCRIPT_NAME} ${VERSION}
+--information:Mosaic${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:X Blocks,1,16384,32,1
 --track1:Y Blocks,1,16384,32,1
 --check0:Sharp Colors,0
 --value@_0:PI,{}
 --[[computeshader@mosaic_ave:
-${SHADER_MOSAIC_AVE}
+--#include "shaders/mosaic_ave.hlsl"
 ]]
 --[[pixelshader@mosaic_draw:
-${SHADER_MOSAIC_DRAW}
+--#include "shaders/mosaic_draw.hlsl"
 ]]
 --[[pixelshader@mosaic_point:
-${SHADER_MOSAIC_POINT}
+--#include "shaders/mosaic_point.hlsl"
 ]]
 
 _0 = _0 or {}
@@ -101,7 +101,7 @@ end
 
 
 @Threshold
---infomation:Threshold${SCRIPT_NAME} ${VERSION}
+--information:Threshold${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:Threshold,0,255,128
 --select@_1:Channel=1,Luminance (BT.601)=0,Luminance (BT.709)=1,Luminance (BT.2020)=2,Value=3,Saturation=4,Hue=5,Alpha=6
@@ -114,8 +114,8 @@ end
 --track1:Mix,0,100,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@thresholding:
-${SHADER_UTILS}
-${SHADER_THRESHOLD}
+--#include "shaders/utils.hlsl"
+--#include "shaders/threshold.hlsl"
 ]]
 
 local function clamp(v, min, max)
@@ -153,7 +153,7 @@ obj.pixelshader("thresholding", "object", "object", {
 
 
 @Threshold(RGBA)
---infomation:Threshold(RGBA)${SCRIPT_NAME} ${VERSION}
+--information:Threshold(RGBA)${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:R Threshold,0,255,128
 --track1:G Threshold,0,255,128
@@ -168,8 +168,8 @@ obj.pixelshader("thresholding", "object", "object", {
 --track@_6:Mix,0,100,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@thresholding_rgba:
-${SHADER_UTILS}
-${SHADER_THRESHOLD_RGBA}
+--#include "shaders/utils.hlsl"
+--#include "shaders/threshold_rgba.hlsl"
 ]]
 
 local function clamp(v, min, max)
@@ -225,7 +225,7 @@ obj.pixelshader("thresholding_rgba", "object", "object", {
 
 
 @Posterize
---infomation:Posterize${SCRIPT_NAME} ${VERSION}
+--information:Posterize${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:Level,1,256,8,1
 --select@_1:Channel,RGB=0,RGBA=1,Value=2,Value A=3
@@ -235,8 +235,8 @@ obj.pixelshader("thresholding_rgba", "object", "object", {
 --track@_4:Mix,0,100,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@posterize:
-${SHADER_UTILS}
-${SHADER_POSTERIZE}
+--#include "shaders/utils.hlsl"
+--#include "shaders/posterize.hlsl"
 ]]
 
 local function clamp(v, min, max)
@@ -272,7 +272,7 @@ obj.pixelshader("posterize", "object", "object", {
 
 
 @Posterize(RGBA)
---infomation:Posterize(RGBA)${SCRIPT_NAME} ${VERSION}
+--information:Posterize(RGBA)${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:R Level,1,256,8,1
 --track1:G Level,1,256,8,1
@@ -285,8 +285,8 @@ obj.pixelshader("posterize", "object", "object", {
 --track@_4:Mix,0,100,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@posterize_rgba:
-${SHADER_UTILS}
-${SHADER_POSTERIZE_RGBA}
+--#include "shaders/utils.hlsl"
+--#include "shaders/posterize_rgba.hlsl"
 ]]
 
 local function clamp(v, min, max)
@@ -330,7 +330,7 @@ obj.pixelshader("posterize_rgba", "object", "object", {
 
 
 @ASCII
---infomation:ASCII${SCRIPT_NAME} ${VERSION}
+--information:ASCII${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --value@_1:Glyphs,"@#%*+=-:. "
 --font@_2:Font,Yu Gothic UI
@@ -357,8 +357,8 @@ obj.pixelshader("posterize_rgba", "object", "object", {
 --track@_18:Seed,-1000,1000,-1,1
 --value@_0:PI,{}
 --[[pixelshader@ascii:
-${SHADER_UTILS}
-${SHADER_ASCII}
+--#include "shaders/utils.hlsl"
+--#include "shaders/ascii.hlsl"
 ]]
 
 local function clamp(v, min, max)
@@ -567,240 +567,303 @@ end
 
 
 @MotionTile
---infomation:MotionTile${SCRIPT_NAME} ${VERSION}
---label:${LABEL}
+--information:MotionTile${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
+--label:${LABEL}\Tile
+--track2:Width Scale,0,10000,100,0.01
+--track3:Height Scale,0,10000,100,0.01
+--select@s0:Mirror Direction,None=0,Horizontal=1,Vertical=2,Both=3
+--group:Transform,false
 --track0:X Center,-4000,4000,0,0.01
 --track1:Y Center,-4000,4000,0,0.01
---track2:Output W,0,1000,100,0.01
---track3:Output H,0,1000,100,0.01
---track@_1:Tile W,0,1000,100,0.01
---track@_2:Tile H,0,1000,100,0.01
---check@_3:Mirror Horizontal Edge,0
---check@_4:Mirror Vertical Edge,0
---track@_5:Phase,-3600,3600,0,0.01
---check0:Horizontal Shift,0
+--track4:X Scale,0,10000,100,0.01
+--track5:Y Scale,0,10000,100,0.01
+--track6:Rotation,-3600,3600,0,0.01
+--group:Phase Shift,false
+--track7:Phase,-3600,3600,0,0.01
+--select@s1:Phase Direction=1,Horizontal=0,Vertical=1
+--group:Additional Options,false
 --value@_0:PI,{}
 --[[pixelshader@motion_tile:
-${SHADER_MOTION_TILE}
+--#include "shaders/motion_tile.hlsl"
 ]]
 
 obj.setanchor("track", 0, "line")
 
-local w, h = obj.getpixel()
-
 _0 = _0 or {}
-local cx = (tonumber(_0.cx) or obj.track0) / w
-local cy = (tonumber(_0.cy) or obj.track1) / h
-local out_w = math.max(tonumber(_0.out_w) or obj.track2, 0.0) * 0.01
-local out_h = math.max(tonumber(_0.out_h) or obj.track3, 0.0) * 0.01
-local tile_w = math.max(tonumber(_0.tile_w) or _1, 0.0) * 0.01 _1 = nil
-local tile_h = math.max(tonumber(_0.tile_h) or _2, 0.0) * 0.01 _2 = nil
-local mirror_h = _3 _3 = nil
-if (type(_0.mirror_h) == "boolean") then
-    mirror_h = _0.mirror_h and 1 or 0
-elseif (type(_0.mirror_h) == "number") then
-    mirror_h = _0.mirror_h ~= 0 and 1 or 0
+local sw = obj.track2
+local sh = obj.track3
+local sx = obj.track4
+local sy = obj.track5
+
+if (type(_0.scale) == "table") then
+    sw = tonumber(_0.scale.w) or obj.track2
+    sh = tonumber(_0.scale.h) or obj.track3
+    sx = tonumber(_0.scale.x) or obj.track4
+    sy = tonumber(_0.scale.y) or obj.track5
 end
-local mirror_v = _4 _4 = nil
-if (type(_0.mirror_v) == "boolean") then
-    mirror_v = _0.mirror_v and 1 or 0
-elseif (type(_0.mirror_v) == "number") then
-    mirror_v = _0.mirror_v ~= 0 and 1 or 0
+
+sw = sw * 0.01
+sh = sh * 0.01
+sx = sx * 0.01
+sy = sy * 0.01
+
+local cx = obj.track0
+local cy = obj.track1
+
+if (type(_0.center) == "table") then
+    cx = tonumber(_0.center.x) or obj.track0
+    cy = tonumber(_0.center.y) or obj.track1
 end
-local phase = (tonumber(_0.phase) or _5) / 360.0 _5 = nil
-local h_shift = obj.check0 and 1 or 0
-if (type(_0.h_shift) == "boolean") then
-    h_shift = _0.h_shift and 1 or 0
-elseif (type(_0.h_shift) == "number") then
-    h_shift = _0.h_shift ~= 0 and 1 or 0
+
+cx = cx / obj.w
+cy = cy / obj.h
+
+local phase = obj.track7
+local phase_dir = s1
+if (type(_0.phase_shift) == "table") then
+    phase = tonumber(_0.phase_shift.phase) or obj.track7
+    phase_dir = tonumber(_0.phase_shift.direction) or s1
 end
+s1 = nil
+
+local rot = math.rad(tonumber(_0.rotation) or obj.track6)
+local mirror = tonumber(_0.mirror_direction) or s0 s0 = nil
 _0 = nil
+
+--#include "utils.lua"
 
 local geo = {}
 local max_w, max_h = obj.getinfo("image_max")
-local out_res_w = math.min(math.floor(w * out_w), max_w)
-local out_res_h = math.min(math.floor(h * out_h), max_h)
+local w = math.min(math.floor(obj.w * sw), max_w)
+local h = math.min(math.floor(obj.h * sh), max_h)
 
-
-local function err_handler(e)
-    local hint = "Hint: Try increasing TemporaryImageCacheSize in system.conf."
-    debug_print(string.format("%s. %s", e, hint))
-end
-
-local function copy_geo(dst, src)
-    for k in ("ox, oy, oz, cx, cy, cz, rx, ry, rz, zoom, aspect, alpha"):gmatch("%a+") do
-        dst[k] = src[k]
-    end
-end
-
-
-if (out_res_w * out_res_h < 1) then
+if (w * h < 1) then
     obj.effect("リサイズ", "拡大率", 0)
     return
 end
 
-out_w = out_res_w / w
-out_h = out_res_h / h
+sw = w / obj.w
+sh = h / obj.h
 
-local ok, e = pcall(function()
+local c = math.cos(rot)
+local s = math.sin(rot)
+
 copy_geo(geo, obj)
-obj.setoption("drawtarget", "tempbuffer", out_res_w, out_res_h)
+obj.setoption("drawtarget", "tempbuffer", w, h)
 
 obj.pixelshader("motion_tile", "tempbuffer", "object", {
-    w, h,
-    cx, cy,
-    out_w, out_h,
-    tile_w, tile_h,
-    mirror_h, mirror_v,
-    phase,
-    h_shift
-})
+    c, -s, 0.0, 0.0,
+    s,  c,
+    sw * 0.5 + cx, sh * 0.5 + cy,
+    sw, sh,
+    sx, sy,
+    bit.band(mirror, 1), bit.rshift(mirror, 1),
+    1 - phase_dir, phase_dir,
+    phase / 360.0,
+    obj.h / obj.w
+}, "copy", "clamp")
 
 obj.load("tempbuffer")
 obj.clearbuffer("tempbuffer")
 copy_geo(obj, geo)
-end)
-if (not ok) then
-    err_handler(e)
-end
 
 
 @Tile
---infomation:Tile${SCRIPT_NAME} ${VERSION}
---label:${LABEL}
---track0:X Count,1,100,3,1
---track1:Y Count,1,100,3,1
---track@_1:Z Count,1,100,1,1
---track2:X Gap,-1000,1000,100,0.01
---track3:Y Gap,-1000,1000,100,0.01
---track@_2:Z Gap,-1000,1000,100,0.01
---track@_4:X Offset,-1000,1000,0,0.01
---track@_5:Y Offset,-1000,1000,0,0.01
---check@_6:Center Align,1
---check0:Use Group Pivot,1
---value@_3:Z Size,math.max(obj.getpixel())
+--information:Tile${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
+--label:${LABEL}\Tile
+--group:Count
+--track0:X Count,1,1000,3,1
+--track1:Y Count,1,1000,3,1
+--track2:Z Count,1,1000,1,1
+--group:Padding
+--select@s0:Padding Mode,Relative=0,Absolute=1,Bounds=2
+--track3:X Padding,-100000,100000,0,0.01
+--track4:Y Padding,-100000,100000,0,0.01
+--track5:Z Padding,-100000,100000,0,0.01
+--group:Offset,false
+--select@s1:Offset Mode,Relative=0,Absolute=1,Endpoint=2
+--track6:X Offset,-100000,100000,0,0.01
+--track7:Y Offset,-100000,100000,0,0.01
+--track8:Z Offset,-100000,100000,0,0.01
+--group:Alignment,false
+--select@s4:X Axis=1,Minimum=0,Center=1,Maximum=2
+--select@s5:Y Axis=1,Minimum=0,Center=1,Maximum=2
+--select@s6:Z Axis=1,Minimum=0,Center=1,Maximum=2
+--group:Additional Options,false
+--select@s7:Coord Space=1,World=0,Local=1
 --value@_0:PI,{}
 
 _0 = _0 or {}
-local c_align = _6 ~= 0 _6 = nil
-if (type(_0.center_align) == "boolean") then
-    c_align = _0.center_align
-elseif (type(_0.center_align) == "number") then
-    c_align = _0.center_align ~= 0
-end
-local use_group_pivot = obj.check0
-if (type(_0.use_group_pivot) == "boolean") then
-    use_group_pivot = _0.use_group_pivot
-elseif (type(_0.use_group_pivot) == "number") then
-    use_group_pivot = _0.use_group_pivot ~= 0
-end
-
 local count = {
-    x = math.max(math.floor(tonumber(_0.x_count) or obj.track0), 1) - 1,
-    y = math.max(math.floor(tonumber(_0.y_count) or obj.track1), 1) - 1,
-    z = math.max(math.floor(tonumber(_0.z_count) or _1), 1) - 1
+    x = obj.track0 - 1,
+    y = obj.track1 - 1,
+    z = obj.track2 - 1
 }
-_1 = nil
 
-local gap = {
-    x = tonumber(_0.x_gap) or obj.track2 * 0.01,
-    y = tonumber(_0.y_gap) or obj.track3 * 0.01,
-    z = tonumber(_0.z_gap) or _2 * 0.01
+if (type(_0.count) == "table") then
+    count.x = (tonumber(_0.count.x) or obj.track0) - 1
+    count.y = (tonumber(_0.count.y) or obj.track1) - 1
+    count.z = (tonumber(_0.count.z) or obj.track2) - 1
+end
+
+local padding = {
+    mode = s0,
+    x = obj.track3,
+    y = obj.track4,
+    z = obj.track5
 }
-_2 = nil
+
+if (type(_0.padding) == "table") then
+    padding.mode = tonumber(_0.padding.mode) or s0
+    padding.x = tonumber(_0.padding.x) or obj.track3
+    padding.y = tonumber(_0.padding.y) or obj.track4
+    padding.z = tonumber(_0.padding.z) or obj.track5
+end
+s0 = nil
 
 local offset = {
-    x = (tonumber(_0.x_offset) or _4) * 0.01,
-    y = (tonumber(_0.y_offset) or _5) * 0.01
-}
-_4 = nil
-_5 = nil
-
-local w, h = obj.getpixel()
-local res = {
-    x = w,
-    y = h,
-    z = math.max(tonumber(_3) or math.max(w, h), 0.0)
-}
-_3 = nil
-_0 = nil
-
-local half_res = {
-    x = res.x * 0.5,
-    y = res.y * 0.5
+    mode = s1,
+    x = obj.track6,
+    y = obj.track7,
+    z = obj.track8
 }
 
--- Arithmetic Progression
--- Offset
-local o = {
-    x = offset.x * res.x / count.y,
-    y = offset.y * res.y / count.x
+if (type(_0.offset) == "table") then
+    offset.mode = tonumber(_0.offset.mode) or s1
+    offset.x = tonumber(_0.offset.x) or obj.track6
+    offset.y = tonumber(_0.offset.y) or obj.track7
+    offset.z = tonumber(_0.offset.z) or obj.track8
+end
+s1 = nil
+
+local align = {
+    x = s4,
+    y = s5,
+    z = s6
 }
 
--- Common Difference
-local d = {
-    x = res.x * gap.x,
-    y = res.y * gap.y,
-    z = res.z * gap.z
+if (type(_0.alignment) == "table") then
+    align.x = tonumber(_0.alignment.x) or s4
+    align.y = tonumber(_0.alignment.y) or s5
+    align.z = tonumber(_0.alignment.z) or s6
+end
+s4 = nil
+s5 = nil
+s6 = nil
+
+local size = {
+    x = obj.w,
+    y = obj.h,
+    z = 0.0
 }
 
--- First Term
-local a = {x = 0.0, y = 0.0, z = 0.0}
-if (c_align) then
-    a = {
-        x = -0.5 * (d.x * count.x + offset.x * res.x),
-        y = -0.5 * (d.y * count.y + offset.y * res.y),
-        z = -0.5 * d.z * count.z
-    }
+if (type(_0.size) == "table") then
+    size.x = tonumber(_0.size.x) or obj.w
+    size.y = tonumber(_0.size.y) or obj.h
+    size.z = tonumber(_0.size.z) or 0.0
 end
 
+local space = tonumber(_0.coord_space) or s7 s7 = nil
+_0 = nil
+
+if (space == 0) then
+    size.x = size.x * obj.getvalue("sx") * obj.sx
+    size.y = size.y * obj.getvalue("sy") * obj.sy
+    size.z = size.z * obj.getvalue("sz") * obj.sz
+end
+
+local d = {}
+if (padding.mode == 0) then
+    d.x = size.x * (1.0 + padding.x * 0.01)
+    d.y = size.y * (1.0 + padding.y * 0.01)
+    d.z = size.z * (1.0 + padding.z * 0.01)
+elseif (padding.mode == 2) then
+    d.x = (padding.x - size.x) / math.max(count.x, 1.0)
+    d.y = (padding.y - size.y) / math.max(count.y, 1.0)
+    d.z = (padding.z - size.z) / math.max(count.z, 1.0)
+else
+    d.x = size.x + padding.x
+    d.y = size.y + padding.y
+    d.z = size.z + padding.z
+end
+
+local o = {}
+if (offset.mode == 0) then
+    o.x = size.x * (offset.x * 0.01)
+    o.y = size.y * (offset.y * 0.01)
+    o.z = size.z * (offset.z * 0.01)
+elseif (offset.mode == 2) then
+    o.x = offset.x / math.max(count.y + count.z, 1.0)
+    o.y = offset.y / math.max(count.z + count.x, 1.0)
+    o.z = offset.z / math.max(count.x + count.y, 1.0)
+else
+    o.x = offset.x
+    o.y = offset.y
+    o.z = offset.z
+end
+
+local a = {
+    x = -align.x * (0.5 * d.x * count.x + o.x),
+    y = -align.y * (0.5 * d.y * count.y + o.y),
+    z = -align.z * (0.5 * d.z * count.z + o.z)
+}
+
 obj.effect()
-if (use_group_pivot) then
+if (space == 1) then
     local polys = {}
-    local idx = 1
-    for l = 0, count.z do
-        local z = a.z + d.z * l
-        for m = 0, count.x do
-            local x = a.x + d.x * m
-            for n = 0, count.y do
-                local y = a.y + d.y * n
+    local pivot = {
+        x = obj.w * 0.5,
+        y = obj.h * 0.5
+    }
 
-                local ox = x + o.x * n
-                local oy = y + o.y * m
+    for k = 0, count.z do
+        local z = a.z + d.z * k
 
-                local left = ox - half_res.x
-                local right = ox + half_res.x
-                local top = oy - half_res.y
-                local bottom = oy + half_res.y
-                polys[idx] = {
-                    left,  top,    z,
-                    right, top,    z,
-                    right, bottom, z,
-                    left,  bottom, z,
+        for i = 0, count.x do
+            local x = a.x + d.x * i
+
+            for j = 0, count.y do
+                local y = a.y + d.y * j
+
+                local ox = x + o.x * (j + k)
+                local oy = y + o.y * (k + i)
+                local oz = z + o.z * (i + j)
+
+                local l = ox - pivot.x
+                local r = ox + pivot.x
+                local t = oy - pivot.y
+                local b = oy + pivot.y
+
+                table.insert(polys, {
+                    l, t, oz,
+                    r, t, oz,
+                    r, b, oz,
+                    l, b, oz,
                     0,     0,
-                    res.x, 0,
-                    res.x, res.y,
-                    0,     res.y
-                }
-
-                idx = idx + 1
+                    obj.w, 0,
+                    obj.w, obj.h,
+                    0,     obj.h
+                })
             end
         end
     end
 
     obj.drawpoly(polys)
 else
-    for l = 0, count.z do
-        local z = a.z + d.z * l
-        for m = 0, count.x do
-            local x = a.x + d.x * m
-            for n = 0, count.y do
-                local y = a.y + d.y * n
+    for k = 0, count.z do
+        local z = a.z + d.z * k
 
-                local ox = x + o.x * n
-                local oy = y + o.y * m
+        for i = 0, count.x do
+            local x = a.x + d.x * i
 
-                obj.draw(ox, oy, z)
+            for j = 0, count.y do
+                local y = a.y + d.y * j
+
+                local ox = x + o.x * (j + k)
+                local oy = y + o.y * (k + i)
+                local oz = z + o.z * (i + j)
+
+                obj.draw(ox, oy, oz)
             end
         end
     end
@@ -808,8 +871,8 @@ end
 
 
 @Repeat
---infomation:Repeat${SCRIPT_NAME} ${VERSION}
---label:${LABEL}
+--information:Repeat${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
+--label:${LABEL}\Tile
 --track@count:Count,1,1000,3,1
 --track@_1:Offset,-1000,1000,0,1
 --select@_2:Composite,Below=0,Above=1
@@ -876,7 +939,7 @@ end
 
 
 @GradientMap
---infomation:GradientMap${SCRIPT_NAME} ${VERSION}
+--information:GradientMap${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --file@_1:Map File
 --track0:Map Layer,-256,256,0,1
@@ -894,14 +957,14 @@ end
 --track@_8:Mix,0,100,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@gradient_map:
-${SHADER_UTILS}
-${SHADER_MAP_UTILS}
-${SHADER_GRADIENT_MAP}
+--#include "shaders/utils.hlsl"
+--#include "shaders/map_utils.hlsl"
+--#include "shaders/gradient_map.hlsl"
 ]]
 --[[pixelshader@map_viewer:
-${SHADER_UTILS}
-${SHADER_MAP_UTILS}
-${SHADER_MAP_VIEWER}
+--#include "shaders/utils.hlsl"
+--#include "shaders/map_utils.hlsl"
+--#include "shaders/map_viewer.hlsl"
 ]]
 
 local function clamp(v, min, max)
@@ -1021,12 +1084,12 @@ end
 
 
 @Unpremultiply
---infomation:Unpremultiply${SCRIPT_NAME} ${VERSION}
+--information:Unpremultiply${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}
 --track0:Gain,0,1000,100,0.01
 --value@_0:PI,{}
 --[[pixelshader@unpremult:
-${SHADER_UNPREMULT}
+--#include "shaders/unpremult.hlsl"
 ]]
 
 _0 = _0 or {}
