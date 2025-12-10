@@ -1038,8 +1038,6 @@ local sy = (tonumber(_0.sy) or obj.track7) * 0.01
 local sz = (tonumber(_0.sz) or obj.track8) * 0.01
 _0 = nil
 
-local cx, cy, cz = obj.getvalue("cx") + obj.cx, obj.getvalue("cy") + obj.cy, obj.getvalue("cz") + obj.cz
-
 local function rotate(rx_, ry_, rz_, ...)
     local c0, s0 = math.cos(rx_), math.sin(rx_)
     local c1, s1 = math.cos(ry_), math.sin(ry_)
@@ -1065,7 +1063,7 @@ local function rotate(rx_, ry_, rz_, ...)
     end
 end
 
-local function draw(xforms)
+local function draw(cx, cy, cz, xforms)
     local len = #xforms
     local polys = {}
     for i = 1, len do
@@ -1115,26 +1113,33 @@ end
 
 local xforms = _G["STYLIZE_ARRAY"]
 local len = #xforms
-for i = 1, len do
-    local xform = xforms[i]
-    for j = 1, n do
+for i = 1, n do
+    local ofs_x, ofs_y, ofs_z = x * i, y * i, z * i
+    local ofs_rx, ofs_ry, ofs_rz = rx * i, ry * i, rz * i
+    local ofs_sx, ofs_sy, ofs_sz = sx ^ i, sy ^ i, sz ^ i
+
+    for j = 1, len do
+        local xform = xforms[j]
         xforms[#xforms + 1] = {
-            x = xform.x + x * j,
-            y = xform.y + y * j,
-            z = xform.z + z * j,
-            rx = xform.rx + rx * j,
-            ry = xform.ry + ry * j,
-            rz = xform.rz + rz * j,
-            sx = xform.sx * sx ^ j,
-            sy = xform.sy * sy ^ j,
-            sz = xform.sz * sz ^ j
+            x = xform.x + ofs_x,
+            y = xform.y + ofs_y,
+            z = xform.z + ofs_z,
+            rx = xform.rx + ofs_rx,
+            ry = xform.ry + ofs_ry,
+            rz = xform.rz + ofs_rz,
+            sx = xform.sx * ofs_sx,
+            sy = xform.sy * ofs_sy,
+            sz = xform.sz * ofs_sz
         }
     end
 end
 
 if (not obj.getoption("script_name", 1, true):match("^Array(.*)${SCRIPT_NAME}$")) then
     obj.effect()
-    draw(xforms)
+
+    local cx, cy, cz = obj.getvalue("cx") + obj.cx, obj.getvalue("cy") + obj.cy, obj.getvalue("cz") + obj.cz
+    draw(cx, cy, cz, xforms)
+
     _G["STYLIZE_ARRAY"] = nil
     obj.setoption("focus_mode", "fixed_size")
 end
@@ -1144,12 +1149,12 @@ end
 --information:Array(Circle)${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}\Tile\Array
 --track@count:Count,1,1000,3,1
---group:Placement
+--group:Geometry
 --select@s0:Layout,Circle=0,Arc=2
 --track0:Radius,0,100000,0,0.01
 --track1:Start Angle,-3600,3600,0,0.01
 --track2:Sweep Angle,0,360,360,0.01
---select@s1:Central Axis=2,X=0,Y=1,Z=2
+--select@s1:Central Axis=3,X=1,Y=2,Z=3,-X=-1,-Y=-2,-Z=-3
 --group
 --check0:Align Rotation,1
 --group:Additional Options,false
@@ -1175,7 +1180,23 @@ local central_axis = tonumber(_0.central_axis) or s1 s1 = nil
 local align = tobool(_0.align_rotation, obj.check0)
 _0 = nil
 
-local cx, cy, cz = obj.getvalue("cx") + obj.cx, obj.getvalue("cy") + obj.cy, obj.getvalue("cz") + obj.cz
+local function todcm(rx_, ry_, rz_)
+    local c0, s0 = math.cos(rx_), math.sin(rx_)
+    local c1, s1 = math.cos(ry_), math.sin(ry_)
+    local c2, s2 = math.cos(rz_), math.sin(rz_)
+
+    local m00 = c1 * c2
+    local m01 = -c1 * s2
+    local m02 = s1
+    local m10 = s0 * s1 * c2 + c0 * s2
+    local m11 = -s0 * s1 * s2 + c0 * c2
+    local m12 = -s0 * c1
+    local m20 = -c0 * s1 * c2 + s0 * s2
+    local m21 = c0 * s1 * s2 + s0 * c2
+    local m22 = c0 * c1
+
+    return { x = m00, y = m10, z = m20 }, { x = m01, y = m11, z = m21 }, { x = m02, y = m12, z = m22 }
+end
 
 local function rotate(rx_, ry_, rz_, ...)
     local c0, s0 = math.cos(rx_), math.sin(rx_)
@@ -1202,7 +1223,7 @@ local function rotate(rx_, ry_, rz_, ...)
     end
 end
 
-local function draw(xforms)
+local function draw(cx, cy,cz, xforms)
     local len = #xforms
     local polys = {}
     for i = 1, len do
@@ -1237,8 +1258,13 @@ local function draw(xforms)
     obj.drawpoly(polys)
 end
 
+local a90 = math.pi * 0.5
 local fan = layout == 0 and 2.0 * math.pi / (n + 1) or sweep / math.max(n, 1.0)
-local r90 = math.pi * 0.5
+if (central_axis < 0) then
+    start = -start
+    fan = -fan
+end
+local ofs_h, ofs_v = radius * math.cos(start), radius * math.sin(start)
 
 if (_G["STYLIZE_ARRAY"] == nil) then
     _G["STYLIZE_ARRAY"] = { { x = 0.0, y = 0.0, z = 0.0, rx = 0.0, ry = 0.0, rz = 0.0, sx = 1.0, sy = 1.0, sz = 1.0 } }
@@ -1246,32 +1272,43 @@ end
 
 local xforms = _G["STYLIZE_ARRAY"]
 local len = #xforms
-if (central_axis == 0) then
-    for i = 1, len do
-        local xform = xforms[i]
+if (central_axis == 1 or central_axis == -1) then
+    if (align) then
+        local ux, uy, uz = todcm(start, a90, a90)
 
-        local v0 = { x = xform.x, y = xform.y, z = xform.z }
-        rotate(0.0, r90, r90, v0)
-        xform.x, xform.y, xform.z = v0.x, v0.y, v0.z
+        for i = 1, len do
+            local xform = xforms[i]
 
-        local c0, s0 = math.cos(start), math.sin(start)
-        local y0, z0 = xform.y, xform.z
-        xform.y = c0 * y0 - s0 * z0 + radius * c0
-        xform.z = s0 * y0 + c0 * z0 + radius * s0
-        if (align) then
+            local x0, y0, z0 = xform.x, xform.y, xform.z
+            xform.x = ux.x * x0 + uy.x * y0 + uz.x * z0
+            xform.y = ux.y * x0 + uy.y * y0 + uz.y * z0 + ofs_h
+            xform.z = ux.z * x0 + uy.z * y0 + uz.z * z0 + ofs_v
+
             xform.rx = xform.rx + start
-            xform.ry = xform.ry + r90
-            xform.rz = xform.rz + r90
+            xform.ry = xform.ry + a90
+            xform.rz = xform.rz + a90
         end
+    else
+        for i = 1, len do
+            local xform = xforms[i]
 
-        for j = 1, n do
-            local angle = fan * j
-            local c, s = math.cos(angle), math.sin(angle)
+            xform.y = xform.y + ofs_h
+            xform.z = xform.z + ofs_v
+        end
+    end
+
+    for i = 1, n do
+        local angle = fan * i
+        local ofs_rx = align and angle or 0.0
+        local c, s = math.cos(angle), math.sin(angle)
+
+        for j = 1, len do
+            local xform = xforms[j]
             xforms[#xforms + 1] = {
                 x = xform.x,
                 y = c * xform.y - s * xform.z,
                 z = s * xform.y + c * xform.z,
-                rx = xform.rx + (align and angle or 0.0),
+                rx = xform.rx + ofs_rx,
                 ry = xform.ry,
                 rz = xform.rz,
                 sx = xform.sx,
@@ -1280,33 +1317,45 @@ if (central_axis == 0) then
             }
         end
     end
-elseif (central_axis == 1) then
-    for i = 1, len do
-        local xform = xforms[i]
+elseif (central_axis == 2 or central_axis == -2) then
+    if (align) then
+        local start_rz = start - a90
+        local ux, uy, uz = todcm(-a90, 0.0, start_rz)
 
-        local v0 = { x = xform.x, y = xform.y, z = xform.z }
-        rotate(-r90, 0.0, -r90, v0)
-        xform.x, xform.y, xform.z = v0.x, v0.y, v0.z
+        for i = 1, len do
+            local xform = xforms[i]
 
-        local c0, s0 = math.cos(start), math.sin(start)
-        local z0, x0 = xform.z, xform.x
-        xform.z = c0 * z0 - s0 * x0 + radius * c0
-        xform.x = s0 * z0 + c0 * x0 + radius * s0
-        if (align) then
-            xform.rx = xform.rx - r90
-            xform.rz = xform.rz - r90 + start
+            local x0, y0, z0 = xform.x, xform.y, xform.z
+            xform.x = ux.x * x0 + uy.x * y0 + uz.x * z0 + ofs_v
+            xform.y = ux.y * x0 + uy.y * y0 + uz.y * z0
+            xform.z = ux.z * x0 + uy.z * y0 + uz.z * z0 + ofs_h
+
+            xform.rx = xform.rx - a90
+            xform.rz = xform.rz + start_rz
         end
+    else
+        for i = 1, len do
+            local xform = xforms[i]
 
-        for j = 1, n do
-            local angle = fan * j
-            local c, s = math.cos(angle), math.sin(angle)
+            xform.z = xform.z + ofs_h
+            xform.x = xform.x + ofs_v
+        end
+    end
+
+    for i = 1, n do
+        local angle = fan * i
+        local ofs_rz = align and angle or 0.0
+        local c, s = math.cos(angle), math.sin(angle)
+
+        for j = 1, len do
+            local xform = xforms[j]
             xforms[#xforms + 1] = {
                 x = s * xform.z + c * xform.x,
                 y = xform.y,
                 z = c * xform.z - s * xform.x,
                 rx = xform.rx,
                 ry = xform.ry,
-                rz = xform.rz + (align and angle or 0.0),
+                rz = xform.rz + ofs_rz,
                 sx = xform.sx,
                 sy = xform.sy,
                 sz = xform.sz
@@ -1314,27 +1363,41 @@ elseif (central_axis == 1) then
         end
     end
 else
-    for i = 1, len do
-        local xform = xforms[i]
+    if (align) then
+        local c, s = math.cos(start), math.sin(start)
 
-        local c0, s0 = math.cos(start), math.sin(start)
-        local x0, y0 = xform.x, xform.y
-        xform.x = c0 * x0 - s0 * y0 + radius * c0
-        xform.y = s0 * x0 + c0 * y0 + radius * s0
-        if (align) then
+        for i = 1, len do
+            local xform = xforms[i]
+
+            local x0, y0 = xform.x, xform.y
+            xform.x = c * x0 - s * y0 + ofs_h
+            xform.y = s * x0 + c * y0 + ofs_v
+
             xform.rz = xform.rz + start
         end
+    else
+        for i = 1, len do
+            local xform = xforms[i]
 
-        for j = 1, n do
-            local angle = fan * j
-            local c, s = math.cos(angle), math.sin(angle)
+            xform.x = xform.x + ofs_h
+            xform.y = xform.y + ofs_v
+        end
+    end
+
+    for i = 1, n do
+        local angle = fan * i
+        local ofs_rz = align and angle or 0.0
+        local c, s = math.cos(angle), math.sin(angle)
+
+        for j = 1, len do
+            local xform = xforms[j]
             xforms[#xforms + 1] = {
                 x = c * xform.x - s * xform.y,
                 y = s * xform.x + c * xform.y,
                 z = xform.z,
                 rx = xform.rx,
                 ry = xform.ry,
-                rz = xform.rz + (align and angle or 0.0),
+                rz = xform.rz + ofs_rz,
                 sx = xform.sx,
                 sy = xform.sy,
                 sz = xform.sz
@@ -1345,7 +1408,10 @@ end
 
 if (not obj.getoption("script_name", 1, true):match("^Array(.*)${SCRIPT_NAME}$")) then
     obj.effect()
-    draw(xforms)
+
+    local cx, cy, cz = obj.getvalue("cx") + obj.cx, obj.getvalue("cy") + obj.cy, obj.getvalue("cz") + obj.cz
+    draw(cx, cy, cz, xforms)
+
     _G["STYLIZE_ARRAY"] = nil
     obj.setoption("focus_mode", "fixed_size")
 end
