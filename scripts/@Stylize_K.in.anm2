@@ -874,7 +874,7 @@ end
 --information:Repeat${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}\Tile
 --track@count:Count,1,1000,3,1
---track2:Offset,-1000,1000,0,0.1
+--track2:Offset,-100,100,0,0.1
 --select@s0:Composite,Below=0,Above=1
 --group:Transform Offset
 --select@s1:Offset Mode,Relative=0,Absolute=1,Endpoint=2
@@ -891,257 +891,436 @@ end
 --group:Additional Options,false
 --value@_0:PI,{}
 
+do
 obj.setanchor("track", 0, "line")
 
+local max, min, cos, sin, floor, rad = math.max, math.min, math.cos, math.sin, math.floor, math.rad
+local setoption = obj.setoption
+
 _0 = _0 or {}
-local n = math.max(math.floor(tonumber(_0.count) or count), 1) - 1 count = nil -- for user
+local n = max(floor(tonumber(_0.count) or count), 1) count = nil -- for user
 local offset = tonumber(_0.offset) or obj.track2
 local composite = tonumber(_0.composite) or s0 s0 = nil
-local cx = tonumber(_0.cx) or obj.track0
-local cy = tonumber(_0.cy) or obj.track1
 local offset_mode = tonumber(_0.offset_mode) or s1 s1 = nil
-local x = tonumber(_0.x) or obj.track3
-local y = tonumber(_0.y) or obj.track4
-local sx = (tonumber(_0.sx) or obj.track5) * 0.01
-local sy = (tonumber(_0.sy) or obj.track6) * 0.01
-local rz = math.rad(tonumber(_0.rotation) or obj.track7)
-local a = tonumber(_0.opacity) or obj.track8 * 0.01
+local ox = tonumber(_0.x) or obj.track3
+local oy = tonumber(_0.y) or obj.track4
+local osx = (tonumber(_0.sx) or obj.track5) * 0.01
+local osy = (tonumber(_0.sy) or obj.track6) * 0.01
+local orz = rad(tonumber(_0.rotation) or obj.track7)
+local oa = tonumber(_0.opacity) or obj.track8 * 0.01
+local px = tonumber(_0.cx) or obj.track0
+local py = tonumber(_0.cy) or obj.track1
 local blend = tonumber(_0.blend_mode) or s2 s2 = nil
 _0 = nil
 
-local function draw(x_, y_, sx_, sy_, rz_, a_)
-    local hw, hh = obj.w * sx_ * 0.5, obj.h * sy_ * 0.5
-    local px, py = -cx * sx_, -cy * sy_
+local w, h = obj.w, obj.h
 
-    local l = px - hw
-    local r = px + hw
-    local t = py - hh
-    local b = py + hh
+local copy, resize, draw
+do
+    local ceil, abs = math.ceil, math.abs
+    local drawpoly = obj.drawpoly
 
-    local x0, y0, x1, y1, x2, y2, x3, y3 = rotation(l, t, r, t, r, b, l, b, 1.0, math.deg(rz_))
-    local dx, dy = x_ + cx, y_ + cy
+    local tiny = -math.huge
 
-    obj.drawpoly(
-        x0 + dx, y0 + dy, 0.0,
-        x1 + dx, y1 + dy, 0.0,
-        x2 + dx, y2 + dy, 0.0,
-        x3 + dx, y3 + dy, 0.0,
-        0,     0,
-        obj.w, 0,
-        obj.w, obj.h,
-        0,     obj.h,
-        a_
-    )
-end
+    local hw, hh = w * 0.5, h * 0.5
+    local keys = {
+        "cx", "cy", "cz",
+        "ox", "oy", "oz",
+        "rx", "ry", "rz",
+        "sx", "sy", "sz",
+        "alpha"
+    }
 
-local function resize(xforms)
-    local t, r, b, l = -math.huge, -math.huge, -math.huge, -math.huge
-    local len = #xforms
-    for i = 1, len do
-        local xform = xforms[i]
-        local c0, s0 = math.cos(xform.rz), math.sin(xform.rz)
-        local c1, s1 = math.abs(c0), math.abs(s0)
-        local tx, ty = -cx * xform.sx, -cy * xform.sy
-        local w, h = obj.w * xform.sx, obj.h * xform.sy
-        tx, ty = (c0 * tx - s0 * ty) + xform.x + cx, (s0 * tx + c0 * ty) + xform.y + cy
-        w, h = c1 * w + s1 * h, s1 * w + c1 * h
-        local dx, dy = (w - obj.w) * 0.5, (h - obj.h) * 0.5
-        t = math.max(math.ceil(dy - ty), t)
-        r = math.max(math.ceil(dx + tx), r)
-        b = math.max(math.ceil(dy + ty), b)
-        l = math.max(math.ceil(dx - tx), l)
+    copy = function (dst, src)
+        for i = 1, 13 do
+            local k = keys[i]
+            dst[k] = src[k]
+        end
     end
-    return t, r, b, l
-end
 
-local function copy_geo(dst, src)
-    for k in ("cx, cy, cz, ox, oy, oz, rx, ry, rz, sx, sy, sz, alpha"):gmatch("%a+") do
-        dst[k] = src[k]
+    resize = function (data)
+        local top, right, bottom, left = tiny, tiny, tiny, tiny
+
+        for i = 1, n do
+            local t = data[i]
+            local m11 = t[1]
+            local m21 = t[2]
+            local m12 = t[3]
+            local m22 = t[4]
+            local tx = t[5]
+            local ty = t[6]
+
+            local x = tx + px - (m11 * px + m12 * py)
+            local y = ty + py - (m21 * px + m22 * py)
+            local dx = (abs(m11) * hw + abs(m12) * hh) - hw
+            local dy = (abs(m21) * hw + abs(m22) * hh) - hh
+
+            top = max(ceil(dy - y), top)
+            right = max(ceil(dx + x), right)
+            bottom = max(ceil(dy + y), bottom)
+            left = max(ceil(dx - x), left)
+        end
+
+        return top, right, bottom, left
+    end
+
+    draw = function (t, cx, cy)
+        local m11 = t[1]
+        local m21 = t[2]
+        local m12 = t[3]
+        local m22 = t[4]
+        local tx = t[5]
+        local ty = t[6]
+        local a = t[7]
+
+        local ur_x = m11 * hw - m12 * hh
+        local ur_y = m21 * hw - m22 * hh
+        local lr_x = m11 * hw + m12 * hh
+        local lr_y = m21 * hw + m22 * hh
+        local x = tx + px - (m11 * px + m12 * py) + cx
+        local y = ty + py - (m21 * px + m22 * py) + cy
+
+        drawpoly(
+            x - lr_x, y - lr_y, 0.0,
+            x + ur_x, y + ur_y, 0.0,
+            x + lr_x, y + lr_y, 0.0,
+            x - ur_x, y - ur_y, 0.0,
+            0, 0,
+            w, 0,
+            w, h,
+            0, h,
+            a
+        )
     end
 end
 
 local geo = {}
-local xforms = {}
-local st, ed, step = offset, n + offset, 1
+local data = {}
+local st, ed, step
 if (composite == 0) then
-    st, ed, step = ed, st, -1
+    st, ed, step = n - 1, 0, -1
+else
+    st, ed, step = 0, n - 1, 1
 end
 
 if (offset_mode == 0) then
-    x, y = obj.w * x * 0.01, obj.h * y * 0.01
-elseif (offset_mode == 2 and n > 0) then
-    local rn = 1.0 / n
-    x, y, rz = x / n, y / n, rz / n
-    sx, sy, a = sx ^ rn, sy ^ rn, a ^ rn
+    ox, oy = w * ox * 0.01, h * oy * 0.01
+elseif (offset_mode == 2 and n > 1) then
+    local rn = 1.0 / (n - 1)
+    ox, oy, orz = ox * rn, oy * rn, orz * rn
+    osx, osy, oa = osx ^ rn, osy ^ rn, oa ^ rn
 end
 
 for i = st, ed, step do
-    xforms[#xforms + 1] = {
-        x = x * i,
-        y = y * i,
-        sx = sx ^ i,
-        sy = sy ^ i,
-        rz = rz * i,
-        a = math.min(a ^ i, 1.0)
+    local f = i + offset
+    local sx, sy = osx ^ f, osy ^ f
+    local rz = orz * f
+    local c, s = cos(rz), sin(rz)
+
+    data[#data + 1] = {
+        sx * c,  sx * s,
+        -sy * s, sy * c,
+        ox * f,  oy * f,
+        min(oa ^ f, 1.0)
     }
 end
 
-local t, r, b, l = resize(xforms)
-local dx, dy = (l - r) * 0.5, (t - b) * 0.5
+local t, r, b, l = resize(data)
+local cx, cy = (l - r) * 0.5, (t - b) * 0.5
 
-copy_geo(geo, obj)
-obj.setoption("drawtarget", "tempbuffer", obj.w + l + r, obj.h + t + b)
-obj.setoption("blend", blend)
+copy(geo, obj)
+setoption("drawtarget", "tempbuffer", w + l + r, h + t + b)
+setoption("blend", blend)
 
-local len = #xforms
-for i = 1, len do
-    local xform = xforms[i]
-    draw(xform.x + dx, xform.y + dy, xform.sx, xform.sy, xform.rz, xform.a)
+for i = 1, n do
+    draw(data[i], cx, cy)
 end
 
 obj.load("tempbuffer")
 obj.clearbuffer("tempbuffer")
-obj.setoption("blend", "none")
-copy_geo(obj, geo)
-obj.cx, obj.cy = obj.cx + dx, obj.cy + dy
+setoption("blend", "none")
+copy(obj, geo)
+obj.cx, obj.cy = obj.cx + cx, obj.cy + cy
+end
 
 
 @Array(Line)
 --information:Array(Line)${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}\Tile\Array
 --track@count:Count,1,1000,3,1
+--track3:Offset,-100,100,0,0.1
 --group:Transform Offset
 --select@s0:Offset Mode,Relative=0,Absolute=1,Endpoint=2
 --track0:X,-100000,100000,100,0.01
 --track1:Y,-100000,100000,0,0.01
 --track2:Z,-100000,100000,0,0.01
---track3:X Rotation,-3600,3600,0,0.01
---track4:Y Rotation,-3600,3600,0,0.01
---track5:Z Rotation,-3600,3600,0,0.01
---track6:X Scale,0,10000,100,0.01
---track7:Y Scale,0,10000,100,0.01
---track8:Z Scale,0,10000,100,0.01
+--track4:X Rotation,-3600,3600,0,0.01
+--track5:Y Rotation,-3600,3600,0,0.01
+--track6:Z Rotation,-3600,3600,0,0.01
+--track7:X Scale,0,10000,100,0.01
+--track8:Y Scale,0,10000,100,0.01
+--track9:Z Scale,0,10000,100,0.01
+--group:Randomization,false
+--check0:Randomize,0
+--track10:X Extent,-100000,100000,0,0.01
+--track11:Y Extent,-100000,100000,0,0.01
+--track12:Z Extent,-100000,100000,0,0.01
+--track13:RX Extent,-3600,3600,0,0.01
+--track14:RY Extent,-3600,3600,0,0.01
+--track15:RZ Extent,-3600,3600,0,0.01
+--track16:SX Extent,0,100,0,0.01
+--track17:SY Extent,0,100,0,0.01
+--track18:SZ Extent,0,100,0,0.01
+--track19:X Flipping,0,100,0,0.01
+--track20:Y Flipping,0,100,0,0.01
+--track21:Z Flipping,0,100,0,0.01
+--select@s1:Exclusion,None=0,First=1,Last=2,Both=3
+--track22:Seed,0,1000,0,1
 --group:Additional Options,false
 --value@_0:PI,{}
 
-_0 = _0 or {}
-local n = math.max(math.floor(tonumber(_0.count) or count), 1) - 1 count = nil -- for user
-local offset_mode = tonumber(_0.offset_mode) or s0 s0 = nil
-local x = tonumber(_0.x) or obj.track0
-local y = tonumber(_0.y) or obj.track1
-local z = tonumber(_0.z) or obj.track2
-local rx = math.rad(tonumber(_0.rx) or obj.track3)
-local ry = math.rad(tonumber(_0.ry) or obj.track4)
-local rz = math.rad(tonumber(_0.rz) or obj.track5)
-local sx = (tonumber(_0.sx) or obj.track6) * 0.01
-local sy = (tonumber(_0.sy) or obj.track7) * 0.01
-local sz = (tonumber(_0.sz) or obj.track8) * 0.01
-_0 = nil
+do
+if (s0 == 2) then
+    obj.setanchor("track", 0, "line", "xyz")
+end
 
-local function rotate(rx_, ry_, rz_, ...)
-    local c0, s0 = math.cos(rx_), math.sin(rx_)
-    local c1, s1 = math.cos(ry_), math.sin(ry_)
-    local c2, s2 = math.cos(rz_), math.sin(rz_)
-
-    local m00 = c1 * c2
-    local m01 = -c1 * s2
-    local m02 = s1
-    local m10 = s0 * s1 * c2 + c0 * s2
-    local m11 = -s0 * s1 * s2 + c0 * c2
-    local m12 = -s0 * c1
-    local m20 = -c0 * s1 * c2 + s0 * s2
-    local m21 = c0 * s1 * s2 + s0 * c2
-    local m22 = c0 * c1
-
-    local count = select("#", ...)
-    for i = 1, count do
-        local v = select(i, ...)
-        local vx, vy, vz = v.x, v.y, v.z
-        v.x = m00 * vx + m01 * vy + m02 * vz
-        v.y = m10 * vx + m11 * vy + m12 * vz
-        v.z = m20 * vx + m21 * vy + m22 * vz
+local function tobool(v, d)
+    if (type(v) == "boolean") then
+        return v
+    elseif (type(v) == "number") then
+        return v ~= 0
+    else
+        return d
     end
 end
 
-local function draw(cx, cy, cz, xforms)
-    local len = #xforms
-    local polys = {}
-    for i = 1, len do
-        local xform = xforms[i]
-        local hw, hh = obj.w * xform.sx * 0.5, obj.h * xform.sy * 0.5
-        local px, py, pz = -cx * xform.sx, -cy * xform.sy, -cz * xform.sz
+local max, cos, sin, floor, rad = math.max, math.cos, math.sin, math.floor, math.rad
 
-        local l = px - hw
-        local r = px + hw
-        local t = py - hh
-        local b = py + hh
+_0 = _0 or {}
+local n = max(floor(tonumber(_0.count) or count), 1) - 1 count = nil -- for user
+local offset = tonumber(_0.offset) or obj.track3
+local offset_mode = tonumber(_0.offset_mode) or s0 s0 = nil
+local ox = tonumber(_0.x) or obj.track0
+local oy = tonumber(_0.y) or obj.track1
+local oz = tonumber(_0.z) or obj.track2
+local orx = rad(tonumber(_0.rx) or obj.track4)
+local ory = rad(tonumber(_0.ry) or obj.track5)
+local orz = rad(tonumber(_0.rz) or obj.track6)
+local osx = (tonumber(_0.sx) or obj.track7) * 0.01
+local osy = (tonumber(_0.sy) or obj.track8) * 0.01
+local osz = (tonumber(_0.sz) or obj.track9) * 0.01
+local randomize = tobool(_0.randomize, obj.check0)
+local x_ex, y_ex, z_ex
+local rx_ex, ry_ex, rz_ex
+local sx_ex, sy_ex, sz_ex
+local fx, fy, fz
+local skip_f, skip_l
+if (randomize) then
+    x_ex = tonumber(_0.x_extent) or obj.track10
+    y_ex = tonumber(_0.y_extent) or obj.track11
+    z_ex = tonumber(_0.z_extent) or obj.track12
+    rx_ex = rad(tonumber(_0.rx_extent) or obj.track13)
+    ry_ex = rad(tonumber(_0.ry_extent) or obj.track14)
+    rz_ex = rad(tonumber(_0.rz_extent) or obj.track15)
+    sx_ex = (tonumber(_0.sx_extent) or obj.track16) * 0.01
+    sy_ex = (tonumber(_0.sy_extent) or obj.track17) * 0.01
+    sz_ex = (tonumber(_0.sz_extent) or obj.track18) * 0.01
+    fx = (tonumber(_0.x_flipping) or obj.track19) * 0.01
+    fy = (tonumber(_0.y_flipping) or obj.track20) * 0.01
+    fz = (tonumber(_0.z_flipping) or obj.track21) * 0.01
+    math.randomseed(tonumber(_0.seed) or obj.track22)
+    local exclusion = tonumber(_0.exclusion) or s1 s1 = nil
+    skip_f, skip_l = bit.band(exclusion, 1) ~= 0, bit.rshift(exclusion, 1) ~= 0
+end
+_0 = nil
 
-        local dx, dy, dz = xform.x + cx, xform.y + cy, xform.z + cz
-        local v0 = { x = l, y = t, z = pz }
-        local v1 = { x = r, y = t, z = pz }
-        local v2 = { x = r, y = b, z = pz }
-        local v3 = { x = l, y = b, z = pz }
-        rotate(xform.rx, xform.ry, xform.rz, v0, v1, v2, v3)
+local totransform, fk, bbox, draw
+do
+    local min, abs = math.min, math.abs
 
-        polys[#polys + 1] = {
-            v0.x + dx, v0.y + dy, v0.z + dz,
-            v1.x + dx, v1.y + dy, v1.z + dz,
-            v2.x + dx, v2.y + dy, v2.z + dz,
-            v3.x + dx, v3.y + dy, v3.z + dz,
-            0,     0,
-            obj.w, 0,
-            obj.w, obj.h,
-            0,     obj.h,
+    local huge = math.huge
+    local tiny = -huge
+
+    totransform = function (x, y, z, rx, ry, rz, sx, sy, sz)
+        local c0, s0 = cos(rx), sin(rx)
+        local c1, s1 = cos(ry), sin(ry)
+        local c2, s2 = cos(rz), sin(rz)
+
+        return {
+            sx * (c1 * c2),  sx * (c0 * s2 + s0 * s1 * c2), sx * (s0 * s2 - c0 * s1 * c2),
+            sy * (-c1 * s2), sy * (c0 * c2 - s0 * s1 * s2), sy * (s0 * c2 + c0 * s1 * s2),
+            sz * (s1),       sz * (-s0 * c1),               sz * (c0 * c1)               ,
+            x,               y,                             z
         }
     end
 
-    obj.drawpoly(polys)
+    fk = function (t0, t1)
+        local t = {}
+
+        for j = 1, 7, 3 do
+            local x, y, z = t1[j], t1[j + 1], t1[j + 2]
+            for i = 1, 3 do
+                t[#t + 1] = t0[i] * x + t0[i + 3] * y + t0[i + 6] * z
+            end
+        end
+
+        local x, y, z = t1[10], t1[11], t1[12]
+        for i = 1, 3 do
+            t[#t + 1] = t0[i] * x + t0[i + 3] * y + t0[i + 6] * z + t0[i + 9]
+        end
+
+        return t
+    end
+
+    bbox = function (data, cx, cy, cz)
+        local hw, hh = obj.w * 0.5, obj.h * 0.5
+
+        local x_min, x_max = huge, tiny
+        local y_min, y_max = huge, tiny
+        local z_min, z_max = huge, tiny
+
+        local len = #data
+        for i = 1, len do
+            local t = data[i]
+            local m11 = t[1]
+            local m21 = t[2]
+            local m31 = t[3]
+            local m12 = t[4]
+            local m22 = t[5]
+            local m32 = t[6]
+            local m13 = t[7]
+            local m23 = t[8]
+            local m33 = t[9]
+            local tx = t[10]
+            local ty = t[11]
+            local tz = t[12]
+
+            local x = tx + cx - (m11 * cx + m12 * cy + m13 * cz)
+            local y = ty + cy - (m21 * cx + m22 * cy + m23 * cz)
+            local z = tz + cz - (m31 * cx + m32 * cy + m33 * cz)
+            local vx = abs(m11) * hw + abs(m12) * hh
+            local vy = abs(m21) * hw + abs(m22) * hh
+            local vz = abs(m31) * hw + abs(m32) * hh
+
+            x_min, x_max = min(x - vx, x_min), max(x + vx, x_max)
+            y_min, y_max = min(y - vy, y_min), max(y + vy, y_max)
+            z_min, z_max = min(z - vz, z_min), max(y + vy, y_max)
+        end
+
+        return x_max - x_min, y_max - y_min, z_max - z_min
+    end
+
+    draw = function (data, cx, cy, cz)
+        local w, h = obj.w, obj.h
+        local hw, hh = w * 0.5, h * 0.5
+
+        local polys = {}
+
+        local len = #data
+        for i = 1, len do
+            local t = data[i]
+            local m11 = t[1]
+            local m21 = t[2]
+            local m31 = t[3]
+            local m12 = t[4]
+            local m22 = t[5]
+            local m32 = t[6]
+            local m13 = t[7]
+            local m23 = t[8]
+            local m33 = t[9]
+            local tx = t[10]
+            local ty = t[11]
+            local tz = t[12]
+
+            local ur_x = m11 * hw - m12 * hh
+            local ur_y = m21 * hw - m22 * hh
+            local ur_z = m31 * hw - m32 * hh
+            local lr_x = m11 * hw + m12 * hh
+            local lr_y = m21 * hw + m22 * hh
+            local lr_z = m31 * hw + m32 * hh
+            local x = tx + cx - (m11 * cx + m12 * cy + m13 * cz)
+            local y = ty + cy - (m21 * cx + m22 * cy + m23 * cz)
+            local z = tz + cz - (m31 * cx + m32 * cy + m33 * cz)
+
+            polys[#polys + 1] = {
+                x - lr_x, y - lr_y, z - lr_z,
+                x + ur_x, y + ur_y, z + ur_z,
+                x + lr_x, y + lr_y, z + lr_z,
+                x - ur_x, y - ur_y, z - ur_z,
+                0, 0,
+                w, 0,
+                w, h,
+                0, h,
+            }
+        end
+
+        obj.drawpoly(polys)
+    end
 end
 
 if (offset_mode == 0) then
-    x, y, z = obj.w * x * 0.01, obj.h * y * 0.01, 0.0
+    local bx, by, bz
+    if (_G["STYLIZE_ARRAY"] == nil) then
+        bx, by, bz = obj.w, obj.h, 0.0
+    else
+        local cx, cy, cz = obj.getvalue("cx") + obj.cx, obj.getvalue("cy") + obj.cy, obj.getvalue("cz") + obj.cz
+        bx, by, bz = bbox(_G["STYLIZE_ARRAY"], cx, cy, cz)
+    end
+    ox, oy, oz = bx * ox * 0.01, by * oy * 0.01, bz * oz * 0.01
 elseif (offset_mode == 2 and n > 0) then
     local rn = 1.0 / n
-    x, y, z = x / n, y / n, z / n
-    rx, ry, rz = rx / n, ry / n, rz / n
-    sx, sy, sz = sx ^ rn, sy ^ rn, sz ^ rn
+    ox, oy, oz = ox * rn, oy * rn, oz * rn
+    orx, ory, orz = orx * rn, ory * rn, orz * rn
+    osx, osy, osz = osx ^ rn, osy ^ rn, osz ^ rn
 end
 
 if (_G["STYLIZE_ARRAY"] == nil) then
-    _G["STYLIZE_ARRAY"] = { { x = 0.0, y = 0.0, z = 0.0, rx = 0.0, ry = 0.0, rz = 0.0, sx = 1.0, sy = 1.0, sz = 1.0 } }
+    _G["STYLIZE_ARRAY"] = { { 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 } }
 end
 
-local xforms = _G["STYLIZE_ARRAY"]
-local len = #xforms
-for i = 1, n do
-    local ofs_x, ofs_y, ofs_z = x * i, y * i, z * i
-    local ofs_rx, ofs_ry, ofs_rz = rx * i, ry * i, rz * i
-    local ofs_sx, ofs_sy, ofs_sz = sx ^ i, sy ^ i, sz ^ i
+local dst = {}
+local src = _G["STYLIZE_ARRAY"]
+local len = #src
+for i = 0, n do
+    local f = i + offset
+    local x, y, z = ox * f, oy * f, oz * f
+    local rx, ry, rz = orx * f, ory * f, orz * f
+    local sx, sy, sz = osx ^ f, osy ^ f, osz ^ f
+
+    local rand = randomize and not ((i == 0 and skip_f) or (i == n and skip_l))
+
+    if (rand) then
+        x = x + (math.random() * 2.0 - 1.0) * x_ex
+        y = y + (math.random() * 2.0 - 1.0) * y_ex
+        z = z + (math.random() * 2.0 - 1.0) * z_ex
+        rx = rx + (math.random() * 2.0 - 1.0) * rx_ex
+        ry = ry + (math.random() * 2.0 - 1.0) * ry_ex
+        rz = rz + (math.random() * 2.0 - 1.0) * rz_ex
+        sx = sx * (1.0 - math.random() * sx_ex)
+        sy = sy * (1.0 - math.random() * sy_ex)
+        sz = sz * (1.0 - math.random() * sz_ex)
+        sx = math.random() < fx and -sx or sx
+        sy = math.random() < fy and -sy or sy
+        sz = math.random() < fz and -sz or sz
+    end
+
+    local t = totransform(x, y, z, rx, ry, rz, sx, sy, sz)
 
     for j = 1, len do
-        local xform = xforms[j]
-        xforms[#xforms + 1] = {
-            x = xform.x + ofs_x,
-            y = xform.y + ofs_y,
-            z = xform.z + ofs_z,
-            rx = xform.rx + ofs_rx,
-            ry = xform.ry + ofs_ry,
-            rz = xform.rz + ofs_rz,
-            sx = xform.sx * ofs_sx,
-            sy = xform.sy * ofs_sy,
-            sz = xform.sz * ofs_sz
-        }
+        dst[#dst + 1] = fk(t, src[j])
     end
 end
+_G["STYLIZE_ARRAY"] = dst
 
 if (not obj.getoption("script_name", 1, true):match("^Array(.*)${SCRIPT_NAME}$")) then
     obj.effect()
 
     local cx, cy, cz = obj.getvalue("cx") + obj.cx, obj.getvalue("cy") + obj.cy, obj.getvalue("cz") + obj.cz
-    draw(cx, cy, cz, xforms)
+    draw(_G["STYLIZE_ARRAY"], cx, cy, cz)
 
     _G["STYLIZE_ARRAY"] = nil
     obj.setoption("focus_mode", "fixed_size")
+end
 end
 
 
@@ -1149,16 +1328,36 @@ end
 --information:Array(Circle)${SCRIPT_NAME} ${VERSION} by ${AUTHOR}
 --label:${LABEL}\Tile\Array
 --track@count:Count,1,1000,3,1
---group:Geometry
+--track0:Offset,-100,100,0,0.1
 --select@s0:Layout,Circle=0,Arc=2
---track0:Radius,0,100000,0,0.01
---track1:Start Angle,-3600,3600,0,0.01
---track2:Sweep Angle,0,360,360,0.01
---select@s1:Central Axis=3,X=1,Y=2,Z=3,-X=-1,-Y=-2,-Z=-3
---group
+--track1:Radius,0,100000,0,0.01
+--track2:Sweep Angle,-3600,3600,360,0.01
+--select@s1:Central Axis=3,X=1,Y=2,Z=3
+--group:Alignment,false
 --check0:Align Rotation,1
+--select@s2:Normal Axis,X=0,Y=3,Z=6
+--select@s3:Tangent Axis=3,X=0,Y=3,Z=6
+--group:Randomization,false
+--check1:Randomize,0
+--track3:X Extent,-100000,100000,0,0.01
+--track4:Y Extent,-100000,100000,0,0.01
+--track5:Z Extent,-100000,100000,0,0.01
+--track6:RX Extent,-3600,3600,0,0.01
+--track7:RY Extent,-3600,3600,0,0.01
+--track8:RZ Extent,-3600,3600,0,0.01
+--track9:SX Extent,0,100,0,0.01
+--track10:SY Extent,0,100,0,0.01
+--track11:SZ Extent,0,100,0,0.01
+--track12:X Flipping,0,100,0,0.01
+--track13:Y Flipping,0,100,0,0.01
+--track14:Z Flipping,0,100,0,0.01
+--select@s4:Exclusion,None=0,First=1,Last=2,Both=3
+--track15:Seed,0,1000,0,1
 --group:Additional Options,false
 --value@_0:PI,{}
+
+do
+local max, cos, sin, floor, rad = math.max, math.cos, math.sin, math.floor, math.rad
 
 local function tobool(v, d)
     if (type(v) == "boolean") then
@@ -1171,249 +1370,280 @@ local function tobool(v, d)
 end
 
 _0 = _0 or {}
-local n = math.max(math.floor(tonumber(_0.count) or count), 1) - 1 count = nil -- for user
+local n = max(floor(tonumber(_0.count) or count), 1) - 1 count = nil -- for user
+local offset = tonumber(_0.offset) or obj.track0
 local layout = tonumber(_0.layout) or s0 s0 = nil
-local radius = tonumber(_0.radius) or obj.track0
-local start = math.rad(tonumber(_0.start_angle) or obj.track1)
-local sweep = math.rad(tonumber(_0.sweep_angle) or obj.track2)
+local radius = tonumber(_0.radius) or obj.track1
+local sweep = rad(tonumber(_0.sweep_angle) or obj.track2)
 local central_axis = tonumber(_0.central_axis) or s1 s1 = nil
 local align = tobool(_0.align_rotation, obj.check0)
+local norm_axis = tonumber(_0.normal_axis) or s2 s2 = nil
+local tan_axis = tonumber(_0.tangent_axis) or s3 s3 = nil
+local randomize = tobool(_0.randomize, obj.check1)
+local x_ex, y_ex, z_ex
+local rx_ex, ry_ex, rz_ex
+local sx_ex, sy_ex, sz_ex
+local fx, fy, fz
+local skip_f, skip_l
+if (randomize) then
+    x_ex = tonumber(_0.x_extent) or obj.track3
+    y_ex = tonumber(_0.y_extent) or obj.track4
+    z_ex = tonumber(_0.z_extent) or obj.track5
+    rx_ex = rad(tonumber(_0.rx_extent) or obj.track6)
+    ry_ex = rad(tonumber(_0.ry_extent) or obj.track7)
+    rz_ex = rad(tonumber(_0.rz_extent) or obj.track8)
+    sx_ex = (tonumber(_0.sx_extent) or obj.track9) * 0.01
+    sy_ex = (tonumber(_0.sy_extent) or obj.track10) * 0.01
+    sz_ex = (tonumber(_0.sz_extent) or obj.track11) * 0.01
+    fx = (tonumber(_0.x_flipping) or obj.track12) * 0.01
+    fy = (tonumber(_0.y_flipping) or obj.track13) * 0.01
+    fz = (tonumber(_0.z_flipping) or obj.track14) * 0.01
+    math.randomseed(tonumber(_0.seed) or obj.track15)
+    local exclusion = tonumber(_0.exclusion) or s4 s4 = nil
+    skip_f, skip_l = bit.band(exclusion, 1) ~= 0, bit.rshift(exclusion, 1) ~= 0
+end
 _0 = nil
 
-local function todcm(rx_, ry_, rz_)
-    local c0, s0 = math.cos(rx_), math.sin(rx_)
-    local c1, s1 = math.cos(ry_), math.sin(ry_)
-    local c2, s2 = math.cos(rz_), math.sin(rz_)
+local totransform, fk, draw
+do
+    totransform = function (x, y, z, rx, ry, rz, sx, sy, sz)
+        local c0, s0 = cos(rx), sin(rx)
+        local c1, s1 = cos(ry), sin(ry)
+        local c2, s2 = cos(rz), sin(rz)
 
-    local m00 = c1 * c2
-    local m01 = -c1 * s2
-    local m02 = s1
-    local m10 = s0 * s1 * c2 + c0 * s2
-    local m11 = -s0 * s1 * s2 + c0 * c2
-    local m12 = -s0 * c1
-    local m20 = -c0 * s1 * c2 + s0 * s2
-    local m21 = c0 * s1 * s2 + s0 * c2
-    local m22 = c0 * c1
-
-    return { x = m00, y = m10, z = m20 }, { x = m01, y = m11, z = m21 }, { x = m02, y = m12, z = m22 }
-end
-
-local function rotate(rx_, ry_, rz_, ...)
-    local c0, s0 = math.cos(rx_), math.sin(rx_)
-    local c1, s1 = math.cos(ry_), math.sin(ry_)
-    local c2, s2 = math.cos(rz_), math.sin(rz_)
-
-    local m00 = c1 * c2
-    local m01 = -c1 * s2
-    local m02 = s1
-    local m10 = s0 * s1 * c2 + c0 * s2
-    local m11 = -s0 * s1 * s2 + c0 * c2
-    local m12 = -s0 * c1
-    local m20 = -c0 * s1 * c2 + s0 * s2
-    local m21 = c0 * s1 * s2 + s0 * c2
-    local m22 = c0 * c1
-
-    local count = select("#", ...)
-    for i = 1, count do
-        local v = select(i, ...)
-        local vx, vy, vz = v.x, v.y, v.z
-        v.x = m00 * vx + m01 * vy + m02 * vz
-        v.y = m10 * vx + m11 * vy + m12 * vz
-        v.z = m20 * vx + m21 * vy + m22 * vz
-    end
-end
-
-local function draw(cx, cy,cz, xforms)
-    local len = #xforms
-    local polys = {}
-    for i = 1, len do
-        local xform = xforms[i]
-        local hw, hh = obj.w * xform.sx * 0.5, obj.h * xform.sy * 0.5
-        local px, py, pz = -cx * xform.sx, -cy * xform.sy, -cz * xform.sz
-
-        local l = px - hw
-        local r = px + hw
-        local t = py - hh
-        local b = py + hh
-
-        local dx, dy, dz = xform.x + cx, xform.y + cy, xform.z + cz
-        local v0 = { x = l, y = t, z = pz }
-        local v1 = { x = r, y = t, z = pz }
-        local v2 = { x = r, y = b, z = pz }
-        local v3 = { x = l, y = b, z = pz }
-        rotate(xform.rx, xform.ry, xform.rz, v0, v1, v2, v3)
-
-        polys[#polys + 1] = {
-            v0.x + dx, v0.y + dy, v0.z + dz,
-            v1.x + dx, v1.y + dy, v1.z + dz,
-            v2.x + dx, v2.y + dy, v2.z + dz,
-            v3.x + dx, v3.y + dy, v3.z + dz,
-            0,     0,
-            obj.w, 0,
-            obj.w, obj.h,
-            0,     obj.h,
+        return {
+            sx * (c1 * c2),  sx * (c0 * s2 + s0 * s1 * c2), sx * (s0 * s2 - c0 * s1 * c2),
+            sy * (-c1 * s2), sy * (c0 * c2 - s0 * s1 * s2), sy * (s0 * c2 + c0 * s1 * s2),
+            sz * (s1),       sz * (-s0 * c1),               sz * (c0 * c1)               ,
+            x,               y,                             z
         }
     end
 
-    obj.drawpoly(polys)
+    fk = function (t0, t1)
+        local t = {}
+
+        for j = 1, 7, 3 do
+            local x, y, z = t1[j], t1[j + 1], t1[j + 2]
+            for i = 1, 3 do
+                t[#t + 1] = t0[i] * x + t0[i + 3] * y + t0[i + 6] * z
+            end
+        end
+
+        local x, y, z = t1[10], t1[11], t1[12]
+        for i = 1, 3 do
+            t[#t + 1] = t0[i] * x + t0[i + 3] * y + t0[i + 6] * z + t0[i + 9]
+        end
+
+        return t
+    end
+
+    draw = function (data, cx, cy, cz)
+        local w, h = obj.w, obj.h
+        local hw, hh = w * 0.5, h * 0.5
+
+        local polys = {}
+
+        local len = #data
+        for i = 1, len do
+            local t = data[i]
+            local m11 = t[1]
+            local m21 = t[2]
+            local m31 = t[3]
+            local m12 = t[4]
+            local m22 = t[5]
+            local m32 = t[6]
+            local m13 = t[7]
+            local m23 = t[8]
+            local m33 = t[9]
+            local tx = t[10]
+            local ty = t[11]
+            local tz = t[12]
+
+            local ur_x = m11 * hw - m12 * hh
+            local ur_y = m21 * hw - m22 * hh
+            local ur_z = m31 * hw - m32 * hh
+            local lr_x = m11 * hw + m12 * hh
+            local lr_y = m21 * hw + m22 * hh
+            local lr_z = m31 * hw + m32 * hh
+            local x = tx + cx - (m11 * cx + m12 * cy + m13 * cz)
+            local y = ty + cy - (m21 * cx + m22 * cy + m23 * cz)
+            local z = tz + cz - (m31 * cx + m32 * cy + m33 * cz)
+
+            polys[#polys + 1] = {
+                x - lr_x, y - lr_y, z - lr_z,
+                x + ur_x, y + ur_y, z + ur_z,
+                x + lr_x, y + lr_y, z + lr_z,
+                x - ur_x, y - ur_y, z - ur_z,
+                0, 0,
+                w, 0,
+                w, h,
+                0, h,
+            }
+        end
+
+        obj.drawpoly(polys)
+    end
 end
 
-local a90 = math.pi * 0.5
-local fan = layout == 0 and 2.0 * math.pi / (n + 1) or sweep / math.max(n, 1.0)
-if (central_axis < 0) then
-    start = -start
-    fan = -fan
+local fan = layout == 0 and 2.0 * math.pi / (n + 1) or sweep / max(n, 1.0)
+local valid, binorm_axis
+if (align) then
+    if (norm_axis ~= tan_axis) then
+        valid = true
+        binorm_axis = 9 - norm_axis - tan_axis
+    else
+        valid = false
+        debug_print("Equal Axes")
+    end
 end
-local ofs_h, ofs_v = radius * math.cos(start), radius * math.sin(start)
 
 if (_G["STYLIZE_ARRAY"] == nil) then
-    _G["STYLIZE_ARRAY"] = { { x = 0.0, y = 0.0, z = 0.0, rx = 0.0, ry = 0.0, rz = 0.0, sx = 1.0, sy = 1.0, sz = 1.0 } }
+    _G["STYLIZE_ARRAY"] = { { 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 } }
 end
 
-local xforms = _G["STYLIZE_ARRAY"]
-local len = #xforms
-if (central_axis == 1 or central_axis == -1) then
-    if (align) then
-        local ux, uy, uz = todcm(start, a90, a90)
+local dst = {}
+local src = _G["STYLIZE_ARRAY"]
+local len = #src
+if (central_axis == 1) then
+    for i = 0, n do
+        local angle = fan * (i + offset)
+        local c, s = cos(angle), sin(angle)
 
-        for i = 1, len do
-            local xform = xforms[i]
+        local t = { 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, radius * c, radius * s }
 
-            local x0, y0, z0 = xform.x, xform.y, xform.z
-            xform.x = ux.x * x0 + uy.x * y0 + uz.x * z0
-            xform.y = ux.y * x0 + uy.y * y0 + uz.y * z0 + ofs_h
-            xform.z = ux.z * x0 + uy.z * y0 + uz.z * z0 + ofs_v
-
-            xform.rx = xform.rx + start
-            xform.ry = xform.ry + a90
-            xform.rz = xform.rz + a90
+        if (align) then
+            if (valid) then
+                local rot = { 1.0, 0.0, 0.0, 0.0, c, s, 0.0, -s, c }
+                for j = 1, 3 do
+                    t[tan_axis + j] = rot[j + 6]
+                    t[norm_axis + j] = rot[j + 3]
+                    t[binorm_axis + j] = rot[j]
+                end
+            else
+                table.move({ 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0 }, 1, 9, 1, t)
+            end
         end
-    else
-        for i = 1, len do
-            local xform = xforms[i]
 
-            xform.y = xform.y + ofs_h
-            xform.z = xform.z + ofs_v
+        local rand = randomize and not ((i == 0 and skip_f) or (i == n and skip_l))
+
+        if (rand) then
+            local x = (math.random() * 2.0 - 1.0) * x_ex
+            local y = (math.random() * 2.0 - 1.0) * y_ex
+            local z = (math.random() * 2.0 - 1.0) * z_ex
+            local rx = (math.random() * 2.0 - 1.0) * rx_ex
+            local ry = (math.random() * 2.0 - 1.0) * ry_ex
+            local rz = (math.random() * 2.0 - 1.0) * rz_ex
+            local sx = (1.0 - math.random() * sx_ex)
+            local sy = (1.0 - math.random() * sy_ex)
+            local sz = (1.0 - math.random() * sz_ex)
+            sx = math.random() < fx and -sx or sx
+            sy = math.random() < fy and -sy or sy
+            sz = math.random() < fz and -sz or sz
+
+            t = fk(t, totransform(x, y, z, rx, ry, rz, sx, sy, sz))
         end
-    end
-
-    for i = 1, n do
-        local angle = fan * i
-        local ofs_rx = align and angle or 0.0
-        local c, s = math.cos(angle), math.sin(angle)
 
         for j = 1, len do
-            local xform = xforms[j]
-            xforms[#xforms + 1] = {
-                x = xform.x,
-                y = c * xform.y - s * xform.z,
-                z = s * xform.y + c * xform.z,
-                rx = xform.rx + ofs_rx,
-                ry = xform.ry,
-                rz = xform.rz,
-                sx = xform.sx,
-                sy = xform.sy,
-                sz = xform.sz
-            }
+            dst[#dst + 1] = fk(t, src[j])
         end
     end
-elseif (central_axis == 2 or central_axis == -2) then
-    if (align) then
-        local start_rz = start - a90
-        local ux, uy, uz = todcm(-a90, 0.0, start_rz)
+elseif (central_axis == 2) then
+    for i = 0, n do
+        local angle = fan * (i + offset)
+        local c, s = cos(angle), sin(angle)
 
-        for i = 1, len do
-            local xform = xforms[i]
+        local t = { 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, radius * s, 0.0, radius * c }
 
-            local x0, y0, z0 = xform.x, xform.y, xform.z
-            xform.x = ux.x * x0 + uy.x * y0 + uz.x * z0 + ofs_v
-            xform.y = ux.y * x0 + uy.y * y0 + uz.y * z0
-            xform.z = ux.z * x0 + uy.z * y0 + uz.z * z0 + ofs_h
-
-            xform.rx = xform.rx - a90
-            xform.rz = xform.rz + start_rz
+        if (align) then
+            if (valid) then
+                local rot = { c, 0.0, -s, 0.0, 1.0, 0.0, s, 0.0, c }
+                for j = 1, 3 do
+                    t[tan_axis + j] = rot[j]
+                    t[norm_axis + j] = rot[j + 6]
+                    t[binorm_axis + j] = rot[j + 3]
+                end
+            else
+                table.move({ 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0 }, 1, 9, 1, t)
+            end
         end
-    else
-        for i = 1, len do
-            local xform = xforms[i]
 
-            xform.z = xform.z + ofs_h
-            xform.x = xform.x + ofs_v
+        local rand = randomize and not ((i == 0 and skip_f) or (i == n and skip_l))
+
+        if (rand) then
+            local x = (math.random() * 2.0 - 1.0) * x_ex
+            local y = (math.random() * 2.0 - 1.0) * y_ex
+            local z = (math.random() * 2.0 - 1.0) * z_ex
+            local rx = (math.random() * 2.0 - 1.0) * rx_ex
+            local ry = (math.random() * 2.0 - 1.0) * ry_ex
+            local rz = (math.random() * 2.0 - 1.0) * rz_ex
+            local sx = (1.0 - math.random() * sx_ex)
+            local sy = (1.0 - math.random() * sy_ex)
+            local sz = (1.0 - math.random() * sz_ex)
+            sx = math.random() < fx and -sx or sx
+            sy = math.random() < fy and -sy or sy
+            sz = math.random() < fz and -sz or sz
+
+            t = fk(t, totransform(x, y, z, rx, ry, rz, sx, sy, sz))
         end
-    end
-
-    for i = 1, n do
-        local angle = fan * i
-        local ofs_rz = align and angle or 0.0
-        local c, s = math.cos(angle), math.sin(angle)
 
         for j = 1, len do
-            local xform = xforms[j]
-            xforms[#xforms + 1] = {
-                x = s * xform.z + c * xform.x,
-                y = xform.y,
-                z = c * xform.z - s * xform.x,
-                rx = xform.rx,
-                ry = xform.ry,
-                rz = xform.rz + ofs_rz,
-                sx = xform.sx,
-                sy = xform.sy,
-                sz = xform.sz
-            }
+            dst[#dst + 1] = fk(t, src[j])
         end
     end
 else
-    if (align) then
-        local c, s = math.cos(start), math.sin(start)
+    for i = 0, n do
+        local angle = fan * (i + offset)
+        local c, s = cos(angle), sin(angle)
 
-        for i = 1, len do
-            local xform = xforms[i]
+        local t = { 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, radius * c, radius * s, 0.0 }
 
-            local x0, y0 = xform.x, xform.y
-            xform.x = c * x0 - s * y0 + ofs_h
-            xform.y = s * x0 + c * y0 + ofs_v
-
-            xform.rz = xform.rz + start
+        if (align) then
+            if (valid) then
+                local rot = { c, s, 0.0, -s, c, 0.0, 0.0, 0.0, 1.0 }
+                for j = 1, 3 do
+                    t[tan_axis + j] = rot[j + 3]
+                    t[norm_axis + j] = rot[j]
+                    t[binorm_axis + j] = rot[j + 6]
+                end
+            end
         end
-    else
-        for i = 1, len do
-            local xform = xforms[i]
 
-            xform.x = xform.x + ofs_h
-            xform.y = xform.y + ofs_v
+        local rand = randomize and not ((i == 0 and skip_f) or (i == n and skip_l))
+
+        if (rand) then
+            local x = (math.random() * 2.0 - 1.0) * x_ex
+            local y = (math.random() * 2.0 - 1.0) * y_ex
+            local z = (math.random() * 2.0 - 1.0) * z_ex
+            local rx = (math.random() * 2.0 - 1.0) * rx_ex
+            local ry = (math.random() * 2.0 - 1.0) * ry_ex
+            local rz = (math.random() * 2.0 - 1.0) * rz_ex
+            local sx = (1.0 - math.random() * sx_ex)
+            local sy = (1.0 - math.random() * sy_ex)
+            local sz = (1.0 - math.random() * sz_ex)
+            sx = math.random() < fx and -sx or sx
+            sy = math.random() < fy and -sy or sy
+            sz = math.random() < fz and -sz or sz
+
+            t = fk(t, totransform(x, y, z, rx, ry, rz, sx, sy, sz))
         end
-    end
-
-    for i = 1, n do
-        local angle = fan * i
-        local ofs_rz = align and angle or 0.0
-        local c, s = math.cos(angle), math.sin(angle)
 
         for j = 1, len do
-            local xform = xforms[j]
-            xforms[#xforms + 1] = {
-                x = c * xform.x - s * xform.y,
-                y = s * xform.x + c * xform.y,
-                z = xform.z,
-                rx = xform.rx,
-                ry = xform.ry,
-                rz = xform.rz + ofs_rz,
-                sx = xform.sx,
-                sy = xform.sy,
-                sz = xform.sz
-            }
+            dst[#dst + 1] = fk(t, src[j])
         end
     end
 end
+
+_G["STYLIZE_ARRAY"] = dst
 
 if (not obj.getoption("script_name", 1, true):match("^Array(.*)${SCRIPT_NAME}$")) then
     obj.effect()
 
     local cx, cy, cz = obj.getvalue("cx") + obj.cx, obj.getvalue("cy") + obj.cy, obj.getvalue("cz") + obj.cz
-    draw(cx, cy, cz, xforms)
+    draw(_G["STYLIZE_ARRAY"], cx, cy, cz)
 
     _G["STYLIZE_ARRAY"] = nil
     obj.setoption("focus_mode", "fixed_size")
+end
 end
 
 
