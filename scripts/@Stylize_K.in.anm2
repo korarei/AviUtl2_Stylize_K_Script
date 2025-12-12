@@ -1094,7 +1094,8 @@ local function tobool(v, d)
     end
 end
 
-local max, cos, sin, floor, rad = math.max, math.cos, math.sin, math.floor, math.rad
+local max, cos, sin, floor, rad, random = math.max, math.cos, math.sin, math.floor, math.rad, math.random
+local getvalue = obj.getvalue
 
 _0 = _0 or {}
 local n = max(floor(tonumber(_0.count) or count), 1) - 1 count = nil -- for user
@@ -1263,7 +1264,7 @@ if (offset_mode == 0) then
     if (_G["STYLIZE_ARRAY"] == nil) then
         bx, by, bz = obj.w, obj.h, 0.0
     else
-        local cx, cy, cz = obj.getvalue("cx") + obj.cx, obj.getvalue("cy") + obj.cy, obj.getvalue("cz") + obj.cz
+        local cx, cy, cz = getvalue("cx") + obj.cx, getvalue("cy") + obj.cy, getvalue("cz") + obj.cz
         bx, by, bz = bbox(_G["STYLIZE_ARRAY"], cx, cy, cz)
     end
     ox, oy, oz = bx * ox * 0.01, by * oy * 0.01, bz * oz * 0.01
@@ -1290,18 +1291,18 @@ for i = 0, n do
     local rand = randomize and not ((i == 0 and skip_f) or (i == n and skip_l))
 
     if (rand) then
-        x = x + (math.random() * 2.0 - 1.0) * x_ex
-        y = y + (math.random() * 2.0 - 1.0) * y_ex
-        z = z + (math.random() * 2.0 - 1.0) * z_ex
-        rx = rx + (math.random() * 2.0 - 1.0) * rx_ex
-        ry = ry + (math.random() * 2.0 - 1.0) * ry_ex
-        rz = rz + (math.random() * 2.0 - 1.0) * rz_ex
-        sx = sx * (1.0 - math.random() * sx_ex)
-        sy = sy * (1.0 - math.random() * sy_ex)
-        sz = sz * (1.0 - math.random() * sz_ex)
-        sx = math.random() < fx and -sx or sx
-        sy = math.random() < fy and -sy or sy
-        sz = math.random() < fz and -sz or sz
+        x = x + (random() * 2.0 - 1.0) * x_ex
+        y = y + (random() * 2.0 - 1.0) * y_ex
+        z = z + (random() * 2.0 - 1.0) * z_ex
+        rx = rx + (random() * 2.0 - 1.0) * rx_ex
+        ry = ry + (random() * 2.0 - 1.0) * ry_ex
+        rz = rz + (random() * 2.0 - 1.0) * rz_ex
+        sx = sx * (1.0 - random() * sx_ex)
+        sy = sy * (1.0 - random() * sy_ex)
+        sz = sz * (1.0 - random() * sz_ex)
+        sx = random() < fx and -sx or sx
+        sy = random() < fy and -sy or sy
+        sz = random() < fz and -sz or sz
     end
 
     local t = totransform(x, y, z, rx, ry, rz, sx, sy, sz)
@@ -1315,7 +1316,7 @@ _G["STYLIZE_ARRAY"] = dst
 if (not obj.getoption("script_name", 1, true):match("^Array(.*)${SCRIPT_NAME}$")) then
     obj.effect()
 
-    local cx, cy, cz = obj.getvalue("cx") + obj.cx, obj.getvalue("cy") + obj.cy, obj.getvalue("cz") + obj.cz
+    local cx, cy, cz = getvalue("cx") + obj.cx, getvalue("cy") + obj.cy, getvalue("cz") + obj.cz
     draw(_G["STYLIZE_ARRAY"], cx, cy, cz)
 
     _G["STYLIZE_ARRAY"] = nil
@@ -1357,7 +1358,8 @@ end
 --value@_0:PI,{}
 
 do
-local max, cos, sin, floor, rad = math.max, math.cos, math.sin, math.floor, math.rad
+local max, cos, sin, floor, rad, random = math.max, math.cos, math.sin, math.floor, math.rad, math.random
+local getvalue = obj.getvalue
 
 local function tobool(v, d)
     if (type(v) == "boolean") then
@@ -1527,18 +1529,18 @@ if (central_axis == 1) then
         local rand = randomize and not ((i == 0 and skip_f) or (i == n and skip_l))
 
         if (rand) then
-            local x = (math.random() * 2.0 - 1.0) * x_ex
-            local y = (math.random() * 2.0 - 1.0) * y_ex
-            local z = (math.random() * 2.0 - 1.0) * z_ex
-            local rx = (math.random() * 2.0 - 1.0) * rx_ex
-            local ry = (math.random() * 2.0 - 1.0) * ry_ex
-            local rz = (math.random() * 2.0 - 1.0) * rz_ex
-            local sx = (1.0 - math.random() * sx_ex)
-            local sy = (1.0 - math.random() * sy_ex)
-            local sz = (1.0 - math.random() * sz_ex)
-            sx = math.random() < fx and -sx or sx
-            sy = math.random() < fy and -sy or sy
-            sz = math.random() < fz and -sz or sz
+            local x = (random() * 2.0 - 1.0) * x_ex
+            local y = (random() * 2.0 - 1.0) * y_ex
+            local z = (random() * 2.0 - 1.0) * z_ex
+            local rx = (random() * 2.0 - 1.0) * rx_ex
+            local ry = (random() * 2.0 - 1.0) * ry_ex
+            local rz = (random() * 2.0 - 1.0) * rz_ex
+            local sx = (1.0 - random() * sx_ex)
+            local sy = (1.0 - random() * sy_ex)
+            local sz = (1.0 - random() * sz_ex)
+            sx = random() < fx and -sx or sx
+            sy = random() < fy and -sy or sy
+            sz = random() < fz and -sz or sz
 
             t = fk(t, totransform(x, y, z, rx, ry, rz, sx, sy, sz))
         end
@@ -1570,18 +1572,18 @@ elseif (central_axis == 2) then
         local rand = randomize and not ((i == 0 and skip_f) or (i == n and skip_l))
 
         if (rand) then
-            local x = (math.random() * 2.0 - 1.0) * x_ex
-            local y = (math.random() * 2.0 - 1.0) * y_ex
-            local z = (math.random() * 2.0 - 1.0) * z_ex
-            local rx = (math.random() * 2.0 - 1.0) * rx_ex
-            local ry = (math.random() * 2.0 - 1.0) * ry_ex
-            local rz = (math.random() * 2.0 - 1.0) * rz_ex
-            local sx = (1.0 - math.random() * sx_ex)
-            local sy = (1.0 - math.random() * sy_ex)
-            local sz = (1.0 - math.random() * sz_ex)
-            sx = math.random() < fx and -sx or sx
-            sy = math.random() < fy and -sy or sy
-            sz = math.random() < fz and -sz or sz
+            local x = (random() * 2.0 - 1.0) * x_ex
+            local y = (random() * 2.0 - 1.0) * y_ex
+            local z = (random() * 2.0 - 1.0) * z_ex
+            local rx = (random() * 2.0 - 1.0) * rx_ex
+            local ry = (random() * 2.0 - 1.0) * ry_ex
+            local rz = (random() * 2.0 - 1.0) * rz_ex
+            local sx = (1.0 - random() * sx_ex)
+            local sy = (1.0 - random() * sy_ex)
+            local sz = (1.0 - random() * sz_ex)
+            sx = random() < fx and -sx or sx
+            sy = random() < fy and -sy or sy
+            sz = random() < fz and -sz or sz
 
             t = fk(t, totransform(x, y, z, rx, ry, rz, sx, sy, sz))
         end
@@ -1611,18 +1613,18 @@ else
         local rand = randomize and not ((i == 0 and skip_f) or (i == n and skip_l))
 
         if (rand) then
-            local x = (math.random() * 2.0 - 1.0) * x_ex
-            local y = (math.random() * 2.0 - 1.0) * y_ex
-            local z = (math.random() * 2.0 - 1.0) * z_ex
-            local rx = (math.random() * 2.0 - 1.0) * rx_ex
-            local ry = (math.random() * 2.0 - 1.0) * ry_ex
-            local rz = (math.random() * 2.0 - 1.0) * rz_ex
-            local sx = (1.0 - math.random() * sx_ex)
-            local sy = (1.0 - math.random() * sy_ex)
-            local sz = (1.0 - math.random() * sz_ex)
-            sx = math.random() < fx and -sx or sx
-            sy = math.random() < fy and -sy or sy
-            sz = math.random() < fz and -sz or sz
+            local x = (random() * 2.0 - 1.0) * x_ex
+            local y = (random() * 2.0 - 1.0) * y_ex
+            local z = (random() * 2.0 - 1.0) * z_ex
+            local rx = (random() * 2.0 - 1.0) * rx_ex
+            local ry = (random() * 2.0 - 1.0) * ry_ex
+            local rz = (random() * 2.0 - 1.0) * rz_ex
+            local sx = (1.0 - random() * sx_ex)
+            local sy = (1.0 - random() * sy_ex)
+            local sz = (1.0 - random() * sz_ex)
+            sx = random() < fx and -sx or sx
+            sy = random() < fy and -sy or sy
+            sz = random() < fz and -sz or sz
 
             t = fk(t, totransform(x, y, z, rx, ry, rz, sx, sy, sz))
         end
@@ -1638,7 +1640,7 @@ _G["STYLIZE_ARRAY"] = dst
 if (not obj.getoption("script_name", 1, true):match("^Array(.*)${SCRIPT_NAME}$")) then
     obj.effect()
 
-    local cx, cy, cz = obj.getvalue("cx") + obj.cx, obj.getvalue("cy") + obj.cy, obj.getvalue("cz") + obj.cz
+    local cx, cy, cz = getvalue("cx") + obj.cx, getvalue("cy") + obj.cy, getvalue("cz") + obj.cz
     draw(_G["STYLIZE_ARRAY"], cx, cy, cz)
 
     _G["STYLIZE_ARRAY"] = nil
