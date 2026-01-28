@@ -733,8 +733,8 @@ local half_res = {
 -- Arithmetic Progression
 -- Offset
 local o = {
-    x = offset.x * res.x / count.y,
-    y = offset.y * res.y / count.x
+    x = offset.x * res.x / math.max(count.y, 1),
+    y = offset.y * res.y / math.max(count.x, 1)
 }
 
 -- Common Difference
@@ -846,12 +846,14 @@ local a_st = math.max(tonumber(_0.st_a) or _10, 0.0) * 0.01 _10 = nil
 local a_ed = math.max(tonumber(_0.ed_a) or _11, 0.0) * 0.01 _11 = nil
 _0 = nil
 
-local a_grad = a_ed - a_st
-local last_idx = n - 1
-local st, ed, step = 0, last_idx, 1
+local range = n - 1
+local st, ed, step = 0, range, 1
 if (composite == 0) then
     st, ed, step = ed, st, -1
 end
+
+local a_grad = a_ed - a_st
+local a_scale = math.max(range, 1)
 
 if (sync) then
     local s = obj.zoom * obj.getvalue("zoom") * 0.01
@@ -868,7 +870,7 @@ end
 
 obj.effect()
 for i = st, ed, step do
-    local t = i / last_idx
+    local t = i / a_scale
     local alpha = a_st + a_grad * t
     i = i + offset
     obj.draw(x * i, y * i, z * i, math.pow(scale, i), alpha, rx * i, ry * i, rz * i)
