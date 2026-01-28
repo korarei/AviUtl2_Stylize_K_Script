@@ -37,7 +37,7 @@ AviUtl ExEdit2で画像の見た目を変えるスクリプト群．
 
 ## 動作確認
 
-- [AviUtl ExEdit2 beta7](https://spring-fragrance.mints.ne.jp/aviutl/)
+- [AviUtl ExEdit2 beta30a](https://spring-fragrance.mints.ne.jp/aviutl/)
 
 
 ## 導入・削除・更新
@@ -930,6 +930,9 @@ AviUtl ExEdit2 beta7まででは発生しない現象である．今後のバー
 LICENSEファイルに記載．
 
 ## Change Log
+
+- **v1.2.1**
+  - `Tile`，`Repeat`で`Count`が1のとき表示されない問題の解決．
 
 - **v1.2.0**
   - `Mosaic`，`Posterize(RGBA)`，`ASCII`，`Repeat`スクリプトを追加．
